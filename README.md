@@ -1,8 +1,8 @@
-# React + Vite
+This is a project to create a simple to use quoting web app, allowing the user to create projects and add costs and subtasks within each project or task. It is designed to be highly customizable so that the user can create a simple project, or an in-depth project.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Technologies used:
+-JavaScript
+-React
+-Tailwind CSS
+-Vite
+-Vitest
