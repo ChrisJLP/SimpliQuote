@@ -149,15 +149,24 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
           </div>
         )}
 
-        <div className="mt-8 border-t pt-4">
-          <div className="flex justify-end items-center text-lg font-semibold">
-            <span>
+        <div className="mt-8 border-t pt-4 space-y-4">
+          <div className="flex justify-center items-center">
+            <span className="text-lg font-semibold">
               Total cost: £
               {totalCost.toLocaleString("en-GB", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
             </span>
+          </div>
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => console.log("View summary clicked")}
+              className="px-6 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+            >
+              View project summary
+            </button>
           </div>
         </div>
 
