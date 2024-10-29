@@ -1,5 +1,5 @@
 // features/Project/CreateProject.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const CreateProjectForm = ({ onCancel, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +10,18 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
     additionalCosts: [],
     totalHours: "",
   });
+
+  const [totalCost, setTotalCost] = useState(0);
+
+  useEffect(() => {
+    if (!formData.includeTasks && formData.hourlyRate && formData.totalHours) {
+      const cost =
+        parseFloat(formData.hourlyRate) * parseFloat(formData.totalHours);
+      setTotalCost(cost);
+    } else {
+      setTotalCost(0);
+    }
+  }, [formData.hourlyRate, formData.totalHours, formData.includeTasks]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -137,8 +149,20 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
           </div>
         )}
 
+        <div className="mt-8 border-t pt-4">
+          <div className="flex justify-end items-center text-lg font-semibold">
+            <span>
+              Total cost: £
+              {totalCost.toLocaleString("en-GB", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          </div>
+        </div>
+
         {/* Action buttons */}
-        <div className="flex justify-end space-x-4 mt-8">
+        <div className="flex justify-end space-x-4 mt-4">
           <button
             type="button"
             onClick={onCancel}
