@@ -7,6 +7,7 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
     hourlyRate: "",
     includeTasks: false,
     tasks: [],
+    additionalCosts: [],
     totalHours: "",
   });
 
@@ -16,6 +17,16 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleAddTask = () => {
+    // We'll implement this later - for now just log
+    console.log("Add task clicked");
+  };
+
+  const handleAddOtherCosts = () => {
+    // We'll implement this later - for now just log
+    console.log("Add other costs clicked");
   };
 
   const handleSubmit = (e) => {
@@ -81,7 +92,33 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
           </label>
         </div>
 
-        {/* Conditional Total Hours (shown if tasks not included) */}
+        {/* Task and Cost Buttons - shown when includeTasks is true */}
+        {formData.includeTasks && (
+          <div className="space-y-4">
+            {formData.tasks.length > 0 && (
+              <div className="mt-4">{/* Task list will go here */}</div>
+            )}
+
+            <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4 sm:justify-center">
+              <button
+                type="button"
+                onClick={handleAddTask}
+                className="w-64 px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+              >
+                Add new task
+              </button>
+              <button
+                type="button"
+                onClick={handleAddOtherCosts}
+                className="w-64 px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+              >
+                Add other costs
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Conditional Total Hours (moved up, before action buttons) */}
         {!formData.includeTasks && (
           <div className="space-y-2">
             <label htmlFor="totalHours" className="block font-medium">
@@ -100,18 +137,18 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action buttons */}
         <div className="flex justify-end space-x-4 mt-8">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border rounded hover:bg-gray-100"
+            className="px-6 py-2 border rounded hover:bg-gray-100"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-[#4CAF50] text-white rounded hover:bg-[#45A049]"
+            className="px-6 py-2 bg-[#4CAF50] text-white rounded hover:bg-[#45A049]"
           >
             Create Project
           </button>
@@ -120,5 +157,4 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
     </div>
   );
 };
-
 export default CreateProjectForm;
