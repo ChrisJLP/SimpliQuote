@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react"; // Add useState import
+import CreateProjectForm from "../features/Project/CreateProject"; // Add this import
 
 const Homepage = () => {
+  const [showCreateModal, setShowCreateModal] = useState(false); // Add this state
+
   return (
     <div className="flex flex-col items-center min-h-screen bg-[#2b314b] p-4">
       <h1 className="mt-4 lg:mt-8 text-4xl font-bold text-[#FBFAFA] text-shadow-md">
@@ -19,16 +22,18 @@ const Homepage = () => {
           "
         >
           <div className="flex justify-between items-center mb-4">
-            {/* Projects Heading */}
             <h2 className="text-2xl font-semibold text-shadow-sm">Projects</h2>
           </div>
 
-          {/* Placeholder Message */}
           <p className="text-gray-600 text-center">
             Links to future projects will display here.
           </p>
-          {/* Create Project Button */}
-          <button className="mt-8 font-bold bg-[#4CAF50] text-white px-4 py-2 rounded transition-colors duration-300 hover:bg-[#45A049]">
+
+          {/* Update the button with onClick handler */}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="mt-8 font-bold bg-[#4CAF50] text-white px-4 py-2 rounded transition-colors duration-300 hover:bg-[#45A049]"
+          >
             Create a new project
           </button>
         </section>
@@ -42,7 +47,6 @@ const Homepage = () => {
             lg:mt-8
             overflow-auto"
         >
-          {/* Example Project Content */}
           <h2 className="text-2xl font-semibold mb-4 text-center text-shadow-sm">
             Example Project
           </h2>
@@ -51,6 +55,19 @@ const Homepage = () => {
           </p>
         </div>
       </div>
+
+      {/* Add the modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <CreateProjectForm
+            onCancel={() => setShowCreateModal(false)}
+            onSubmit={(data) => {
+              console.log("Project data:", data);
+              setShowCreateModal(false);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -80,3 +80,8 @@ simpliquote/
 └── vite.config.js
 
 I've tried to separate concepts to different components so that everything is modular and easy to maintain and work on during development.
+
+29/10/2024
+
+I've made a homepage for the app, and added some basic tests.
+Next, I'll be working on the form to create a new project. First, I'll be looking at creating a basic form without validation or subtasks etc.
