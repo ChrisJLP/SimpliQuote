@@ -13,15 +13,12 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
 
   const [totalCost, setTotalCost] = useState(0);
 
-  useEffect(() => {
+  const calculateTotalCost = () => {
     if (!formData.includeTasks && formData.hourlyRate && formData.totalHours) {
-      const cost =
-        parseFloat(formData.hourlyRate) * parseFloat(formData.totalHours);
-      setTotalCost(cost);
-    } else {
-      setTotalCost(0);
+      return parseFloat(formData.hourlyRate) * parseFloat(formData.totalHours);
     }
-  }, [formData.hourlyRate, formData.totalHours, formData.includeTasks]);
+    return 0;
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -32,12 +29,12 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
   };
 
   const handleAddTask = () => {
-    // We'll implement this later - for now just log
+    // I'll implement this later - for now just log
     console.log("Add task clicked");
   };
 
   const handleAddOtherCosts = () => {
-    // We'll implement this later - for now just log
+    // I'll implement this later - for now just log
     console.log("Add other costs clicked");
   };
 
@@ -130,7 +127,7 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
           </div>
         )}
 
-        {/* Conditional Total Hours (moved up, before action buttons) */}
+        {/* Conditional Total Hours */}
         {!formData.includeTasks && (
           <div className="space-y-2">
             <label htmlFor="totalHours" className="block font-medium">
@@ -153,7 +150,7 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
           <div className="flex justify-center items-center">
             <span className="text-lg font-semibold">
               Total cost: £
-              {totalCost.toLocaleString("en-GB", {
+              {calculateTotalCost().toLocaleString("en-GB", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
