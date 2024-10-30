@@ -1,182 +1,227 @@
-// features/Project/CreateProject.jsx
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Button from "../../components/Button";
+import Modal from "../../components/Modal";
+import CreateTaskForm from "../Task/CreateTask";
 
-const CreateProjectForm = ({ onCancel, onSubmit }) => {
-  const [formData, setFormData] = useState({
-    projectName: "",
+const CreateProjectForm = ({ onSubmit, onCancel }) => {
+  const [projectData, setProjectData] = useState({
+    name: "",
     hourlyRate: "",
-    includeTasks: false,
     tasks: [],
-    additionalCosts: [],
-    totalHours: "",
+    otherCosts: [],
+    totalCost: 0,
   });
-
-  const calculateTotalCost = () => {
-    if (!formData.includeTasks && formData.hourlyRate && formData.totalHours) {
-      return parseFloat(formData.hourlyRate) * parseFloat(formData.totalHours);
-    }
-    return 0;
-  };
+  const [includeTasks, setIncludeTasks] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value } = e.target;
+    setProjectData((prev) => {
+      const updatedData = {
+        ...prev,
+        [name]: value,
+      };
+      if (name === "hourlyRate") {
+        return {
+          ...updatedData,
+          totalCost: calculateTotalCost(prev.tasks, prev.otherCosts, value),
+        };
+      }
+      return updatedData;
+    });
   };
 
-  const handleAddTask = () => {
-    // I'll implement this later - for now just log
-    console.log("Add task clicked");
+  const handleAddTask = (taskData) => {
+    setProjectData((prev) => {
+      const newTask = {
+        ...taskData,
+        hoursEstimate: parseFloat(taskData.hoursEstimate) || 0,
+        subtasks: taskData.subtasks.map((st) => ({
+          ...st,
+          hoursEstimate: parseFloat(st.hoursEstimate) || 0,
+        })),
+      };
+
+      const updatedTasks = [...prev.tasks, newTask];
+      const newTotalCost = calculateTotalCost(
+        updatedTasks,
+        prev.otherCosts,
+        prev.hourlyRate
+      );
+
+      return {
+        ...prev,
+        tasks: updatedTasks,
+        totalCost: newTotalCost,
+      };
+    });
+    setShowTaskModal(false);
   };
 
-  const handleAddOtherCosts = () => {
-    // I'll implement this later - for now just log
-    console.log("Add other costs clicked");
+  const calculateTotalCost = (tasks, otherCosts, hourlyRate) => {
+    const rate = parseFloat(hourlyRate) || 0;
+
+    const tasksCost = tasks.reduce((sum, task) => {
+      const taskHours = parseFloat(task.hoursEstimate) || 0;
+      const subtaskHours =
+        task.subtasks?.reduce(
+          (subtaskSum, subtask) =>
+            subtaskSum + (parseFloat(subtask.hoursEstimate) || 0),
+          0
+        ) || 0;
+      return sum + (taskHours + subtaskHours) * rate;
+    }, 0);
+
+    const additionalCosts = otherCosts.reduce(
+      (sum, cost) => sum + (parseFloat(cost.amount) || 0),
+      0
+    );
+
+    return tasksCost + additionalCosts;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit(projectData);
   };
 
   return (
-    <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6">Create a Project</h2>
+    <div className="bg-white rounded-lg p-6">
+      <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Project Name */}
+        {/* Project Name Input */}
         <div className="space-y-2">
-          <label htmlFor="projectName" className="block font-medium">
-            Project name <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm">Project name *</label>
           <input
             type="text"
-            id="projectName"
-            name="projectName"
-            value={formData.projectName}
+            name="name"
+            value={projectData.name}
             onChange={handleInputChange}
+            className="w-full p-3 border border-gray-300 rounded-md bg-[#F8F9FA]"
             required
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
         </div>
 
-        {/* Hourly Rate */}
+        {/* Hourly Rate Input */}
         <div className="space-y-2">
-          <label htmlFor="hourlyRate" className="block font-medium">
-            Your hourly rate <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm">Your hourly rate *</label>
           <div className="relative">
-            <span className="absolute left-3 top-2">£</span>
+            <span className="absolute left-3 top-3">£</span>
             <input
               type="number"
-              id="hourlyRate"
               name="hourlyRate"
-              value={formData.hourlyRate}
+              value={projectData.hourlyRate}
               onChange={handleInputChange}
-              required
+              className="w-full p-3 pl-6 border border-gray-300 rounded-md bg-[#F8F9FA]"
+              placeholder="0.00"
               min="0"
               step="0.01"
-              className="w-full p-2 pl-7 border rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
             />
           </div>
         </div>
 
-        {/* Include Tasks Option */}
-        <div className="space-y-2">
+        {/* Tasks Checkbox */}
+        <div>
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
-              name="includeTasks"
-              checked={formData.includeTasks}
-              onChange={handleInputChange}
-              className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+              checked={includeTasks}
+              onChange={(e) => setIncludeTasks(e.target.checked)}
+              className="rounded border-gray-300"
             />
-            <span className="font-medium">
-              Do you want to add tasks to your project?
-            </span>
+            <span>Do you want to add tasks to your project?</span>
           </label>
         </div>
 
-        {/* Task and Cost Buttons - shown when includeTasks is true */}
-        {formData.includeTasks && (
-          <div className="space-y-4">
-            {formData.tasks.length > 0 && (
-              <div className="mt-4">{/* Task list will go here */}</div>
-            )}
+        {includeTasks && (
+          <div className="flex space-x-4">
+            <button
+              type="button"
+              onClick={() => setShowTaskModal(true)}
+              className="flex-1 bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
+            >
+              Add new task
+            </button>
+            <button
+              type="button"
+              className="flex-1 bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
+            >
+              Add other costs
+            </button>
+          </div>
+        )}
 
-            <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4 sm:justify-center">
-              <Button
-                variant="secondary"
-                onClick={handleAddTask}
-                className="w-64"
-              >
-                Add new task
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={handleAddOtherCosts}
-                className="w-64"
-              >
-                Add other costs
-              </Button>
+        {/* Display Tasks */}
+        {projectData.tasks.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-base font-medium mb-2">Tasks</h3>
+            <div className="space-y-2">
+              {projectData.tasks.map((task, index) => (
+                <div key={index} className="p-3">
+                  <p className="font-medium">{task.name}</p>
+                  <p className="text-sm text-gray-600">
+                    {task.hoursEstimate} hours estimated
+                  </p>
+                  {task.subtasks && task.subtasks.length > 0 && (
+                    <div className="mt-2 ml-4">
+                      {task.subtasks.map((subtask, idx) => (
+                        <p key={idx} className="text-sm text-gray-600">
+                          - {subtask.name}: {subtask.hoursEstimate} hours
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Conditional Total Hours */}
-        {!formData.includeTasks && (
-          <div className="space-y-2">
-            <label htmlFor="totalHours" className="block font-medium">
-              Total hours estimated
-            </label>
-            <input
-              type="number"
-              id="totalHours"
-              name="totalHours"
-              value={formData.totalHours}
-              onChange={handleInputChange}
-              min="0"
-              step="0.5"
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
-        )}
-
-        <div className="mt-8 border-t pt-4 space-y-4">
-          <div className="flex justify-center items-center">
-            <span className="text-lg font-semibold">
-              Total cost: £
-              {calculateTotalCost().toLocaleString("en-GB", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-          <div className="flex justify-center">
-            <Button
-              variant="secondary"
-              onClick={() => console.log("View summary clicked")}
-              className="w-64" // Add width to match other buttons
-            >
-              View project summary
-            </Button>
-          </div>
+        {/* Total Cost */}
+        <div className="text-center">
+          Total cost: £{projectData.totalCost.toFixed(2)}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex justify-end space-x-4 mt-4">
-          <Button variant="outline" onClick={onCancel}>
+        {/* View Summary Button */}
+        <div className="flex justify-center">
+          <button
+            type="button"
+            className="bg-slate-600 text-white px-6 py-3 rounded hover:bg-slate-700 transition-colors"
+          >
+            View project summary
+          </button>
+        </div>
+
+        {/* Form Actions */}
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-gray-600 hover:text-gray-800"
+          >
             Cancel
-          </Button>
-          <Button variant="primary" type="submit">
+          </button>
+          <button
+            type="submit"
+            className="bg-[#4CAF50] text-white px-4 py-2 rounded hover:bg-[#45A049] transition-colors"
+          >
             Create Project
-          </Button>
+          </button>
         </div>
       </form>
+
+      {/* Task Creation Modal */}
+      <Modal isOpen={showTaskModal} onClose={() => setShowTaskModal(false)}>
+        <CreateTaskForm
+          projectId={projectData.id}
+          onSubmit={handleAddTask}
+          onCancel={() => setShowTaskModal(false)}
+        />
+      </Modal>
     </div>
   );
 };
+
 export default CreateProjectForm;
