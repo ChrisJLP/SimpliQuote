@@ -1,5 +1,6 @@
 // features/Project/CreateProject.jsx
 import { useState, useEffect } from "react";
+import Button from "../../components/Button";
 
 const CreateProjectForm = ({ onCancel, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -10,8 +11,6 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
     additionalCosts: [],
     totalHours: "",
   });
-
-  const [totalCost, setTotalCost] = useState(0);
 
   const calculateTotalCost = () => {
     if (!formData.includeTasks && formData.hourlyRate && formData.totalHours) {
@@ -109,20 +108,20 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
             )}
 
             <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4 sm:justify-center">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={handleAddTask}
-                className="w-64 px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+                className="w-64"
               >
                 Add new task
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={handleAddOtherCosts}
-                className="w-64 px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+                className="w-64"
               >
                 Add other costs
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -157,31 +156,24 @@ const CreateProjectForm = ({ onCancel, onSubmit }) => {
             </span>
           </div>
           <div className="flex justify-center">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={() => console.log("View summary clicked")}
-              className="px-6 py-2 bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+              className="w-64" // Add width to match other buttons
             >
               View project summary
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Action buttons */}
         <div className="flex justify-end space-x-4 mt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-6 py-2 border rounded hover:bg-gray-100"
-          >
+          <Button variant="outline" onClick={onCancel}>
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-2 bg-[#4CAF50] text-white rounded hover:bg-[#45A049]"
-          >
+          </Button>
+          <Button variant="primary" type="submit">
             Create Project
-          </button>
+          </Button>
         </div>
       </form>
     </div>

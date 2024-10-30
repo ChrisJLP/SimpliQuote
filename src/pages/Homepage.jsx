@@ -1,8 +1,11 @@
-import React, { useState } from "react"; // Add useState import
-import CreateProjectForm from "../features/Project/CreateProject"; // Add this import
+import React, { useState } from "react";
+import CreateProjectForm from "../features/Project/CreateProject";
+import Button from "../components/Button";
+import Modal from "../components/Modal";
+import ProjectCard from "../components/ProjectCard";
 
 const Homepage = () => {
-  const [showCreateModal, setShowCreateModal] = useState(false); // Add this state
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-[#2b314b] p-4">
@@ -29,45 +32,31 @@ const Homepage = () => {
             Links to future projects will display here.
           </p>
 
-          {/* Update the button with onClick handler */}
-          <button
+          <Button
+            variant="primary"
             onClick={() => setShowCreateModal(true)}
-            className="mt-8 font-bold bg-[#4CAF50] text-white px-4 py-2 rounded transition-colors duration-300 hover:bg-[#45A049]"
+            className="mt-8 font-bold"
           >
             Create a new project
-          </button>
+          </Button>
         </section>
 
         {/* Project Box */}
-        <div
-          className="mt-8 bg-[#EFEFEC] rounded-lg shadow-md p-6 
-            w-[75vw] h-[60vh] max-w-[60vh] max-h-[60vh] 
-            md:w-[50vh] md:h-[60vh]
-            lg:w-[50vh] lg:h-[60vh]
-            lg:mt-8
-            overflow-auto"
-        >
-          <h2 className="text-2xl font-semibold mb-4 text-center text-shadow-sm">
-            Example Project
-          </h2>
-          <p className="text-gray-700 text-center">
-            This is a placeholder for an example project.
-          </p>
-        </div>
+        <ProjectCard
+          title="Example Project"
+          description="This is a placeholder for an example project."
+        />
       </div>
 
-      {/* Add the modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <CreateProjectForm
-            onCancel={() => setShowCreateModal(false)}
-            onSubmit={(data) => {
-              console.log("Project data:", data);
-              setShowCreateModal(false);
-            }}
-          />
-        </div>
-      )}
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
+        <CreateProjectForm
+          onCancel={() => setShowCreateModal(false)}
+          onSubmit={(data) => {
+            console.log("Project data:", data);
+            setShowCreateModal(false);
+          }}
+        />
+      </Modal>
     </div>
   );
 };
