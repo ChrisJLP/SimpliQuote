@@ -6,6 +6,9 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
   const [hasSubtasks, setHasSubtasks] = useState(false);
   const [confirmedSubtasks, setConfirmedSubtasks] = useState([]);
   const [currentSubtask, setCurrentSubtask] = useState(null);
+  const [singleHoursEstimate, setSingleHoursEstimate] = useState("");
+  const [previousSingleHoursEstimate, setPreviousSingleHoursEstimate] =
+    useState("");
 
   const handleAddSubtask = () => {
     setCurrentSubtask({ name: "", hoursEstimate: "" });
@@ -39,7 +42,6 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (currentSubtask?.name || currentSubtask?.hoursEstimate) {
-      // Alert user about unconfirmed subtask
       if (
         !confirm(
           "You have an unconfirmed subtask. Do you want to continue without it?"
@@ -52,7 +54,9 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
       projectId,
       name: taskName,
       subtasks: hasSubtasks ? confirmedSubtasks : [],
-      hoursEstimate: hasSubtasks ? calculateTotalHours() : 0,
+      hoursEstimate: hasSubtasks
+        ? calculateTotalHours()
+        : parseFloat(singleHoursEstimate) || 0,
     };
     onSubmit(taskData);
   };
@@ -76,6 +80,23 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
             />
           </div>
 
+          {/* Single Hours Estimate - Only shown when no subtasks */}
+          {!hasSubtasks && (
+            <div className="space-y-2">
+              <label className="block text-sm">Hours estimate *</label>
+              <input
+                type="number"
+                value={singleHoursEstimate}
+                onChange={(e) => setSingleHoursEstimate(e.target.value)}
+                required
+                min="0"
+                step="0.5"
+                placeholder="0.0"
+                className="w-full p-3 border border-gray-300 rounded-md"
+              />
+            </div>
+          )}
+
           {/* Subtasks Checkbox */}
           <div>
             <label className="flex items-center space-x-2">
@@ -84,9 +105,16 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
                 checked={hasSubtasks}
                 onChange={(e) => {
                   setHasSubtasks(e.target.checked);
-                  if (!e.target.checked) {
-                    setConfirmedSubtasks([]);
+                  if (e.target.checked) {
+                    // Store current single estimate before switching to subtasks
+                    setPreviousSingleHoursEstimate(singleHoursEstimate);
+                    setSingleHoursEstimate("");
+                  } else {
+                    // Restore previous single estimate when disabling subtasks
+                    setSingleHoursEstimate(previousSingleHoursEstimate);
+                    // Clear any in-progress subtask
                     setCurrentSubtask(null);
+                    // Keep confirmedSubtasks in memory
                   }
                 }}
                 className="rounded border-gray-300"
