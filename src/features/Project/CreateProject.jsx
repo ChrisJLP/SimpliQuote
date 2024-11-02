@@ -86,7 +86,7 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-6">
+    <div className="p-6 min-h-0">
       <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">

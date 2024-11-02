@@ -13,35 +13,30 @@ const Homepage = () => {
         SimpliQuote
       </h1>
 
-      {/* Wrapper div for side-by-side layout */}
       <div className="flex flex-col items-center lg:items-stretch lg:flex-row lg:justify-center lg:space-x-8 w-full lg:mt-16">
         {/* Projects Section */}
-        <section
-          className="
-            flex flex-col items-center mt-8 bg-[#EFEFEC] rounded-lg shadow-md p-6 
-            w-[75vw] min-h-[20vh] max-w-[60vh] max-h-[30vh] 
-            md:w-[50vh] md:min-h-[30vh] md:max-w-[30vh] md:max-h-[60vh]
-            lg:w-[30vh] lg:min-h-[20vh] lg:max-w-[30vh] lg:max-h-[20vh]
-          "
+        <div
+          className="mt-8 bg-[#EFEFEC] rounded-lg shadow-md p-6 
+            w-[280px] h-[200px]
+            flex flex-col items-center"
         >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-shadow-sm">Projects</h2>
-          </div>
+          <h2 className="text-2xl font-semibold text-shadow-sm">Projects</h2>
 
-          <p className="text-gray-600 text-center">
+          <p className="text-gray-600 text-center mt-4">
             Links to future projects will display here.
           </p>
 
-          <Button
-            variant="primary"
-            onClick={() => setShowCreateModal(true)}
-            className="mt-8 font-bold"
-          >
-            Create a new project
-          </Button>
-        </section>
+          <div className="mt-auto w-full">
+            <Button
+              variant="primary"
+              onClick={() => setShowCreateModal(true)}
+              className="w-full whitespace-nowrap px-4"
+            >
+              Create a new project
+            </Button>
+          </div>
+        </div>
 
-        {/* Project Box */}
         <ProjectCard
           title="Example Project"
           description="This is a placeholder for an example project."

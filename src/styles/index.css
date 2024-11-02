@@ -29,3 +29,20 @@ button {
 img {
   @apply block max-w-full;
 }
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .2);
+}
+
+/* This is the important part for Mac OS */
+.modal-content {
+  overflow-y: scroll !important;
+  overflow: -moz-scrollbars-vertical;
+  -ms-overflow-style: scrollbar;
+}
