@@ -85,3 +85,7 @@ I've tried to separate concepts to different components so that everything is mo
 
 I've made a homepage for the app, and added some basic tests.
 Next, I'll be working on the form to create a new project. First, I'll be looking at creating a basic form without validation or subtasks etc.
+
+02/10/24
+
+I found that in the form that appears when 'create a new project' is clicked, it's not that obvious that the form is scrollable once it reaches a certain size. So, I force enabled the scrollbar on the right once the form reaches 75% the height of the viewport and becomes scrollable.

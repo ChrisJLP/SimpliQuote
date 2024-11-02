@@ -86,131 +86,134 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="p-6 min-h-0">
-      <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
+    <div className="flex flex-col h-full">
+      <div className="overflow-y-auto p-6 pb-24">
+        <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Project Name Input */}
-        <div className="space-y-2">
-          <label className="block text-sm">Project name *</label>
-          <input
-            type="text"
-            name="name"
-            value={projectData.name}
-            onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded-md bg-[#F8F9FA]"
-            required
-          />
-        </div>
-
-        {/* Hourly Rate Input */}
-        <div className="space-y-2">
-          <label className="block text-sm">Your hourly rate *</label>
-          <div className="relative">
-            <span className="absolute left-3 top-3">£</span>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Project Name Input */}
+          <div className="space-y-2">
+            <label className="block text-sm">Project name *</label>
             <input
-              type="number"
-              name="hourlyRate"
-              value={projectData.hourlyRate}
+              type="text"
+              name="name"
+              value={projectData.name}
               onChange={handleInputChange}
-              className="w-full p-3 pl-6 border border-gray-300 rounded-md bg-[#F8F9FA]"
-              placeholder="0.00"
-              min="0"
-              step="0.01"
+              className="w-full p-3 border border-gray-300 rounded-md bg-[#F8F9FA]"
               required
             />
           </div>
-        </div>
 
-        {/* Tasks Checkbox */}
-        <div>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={includeTasks}
-              onChange={(e) => setIncludeTasks(e.target.checked)}
-              className="rounded border-gray-300"
-            />
-            <span>Do you want to add tasks to your project?</span>
-          </label>
-        </div>
-
-        {includeTasks && (
-          <div className="flex space-x-4">
-            <button
-              type="button"
-              onClick={() => setShowTaskModal(true)}
-              className="flex-1 bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
-            >
-              Add new task
-            </button>
-            <button
-              type="button"
-              className="flex-1 bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
-            >
-              Add other costs
-            </button>
-          </div>
-        )}
-
-        {/* Display Tasks */}
-        {projectData.tasks.length > 0 && (
+          {/* Hourly Rate Input */}
           <div className="space-y-2">
-            <h3 className="text-base font-medium mb-2">Tasks</h3>
-            <div className="space-y-2">
-              {projectData.tasks.map((task, index) => (
-                <div key={index} className="p-3">
-                  <p className="font-medium">{task.name}</p>
-                  <p className="text-sm text-gray-600">
-                    {task.hoursEstimate} hours estimated
-                  </p>
-                  {task.subtasks && task.subtasks.length > 0 && (
-                    <div className="mt-2 ml-4">
-                      {task.subtasks.map((subtask, idx) => (
-                        <p key={idx} className="text-sm text-gray-600">
-                          - {subtask.name}: {subtask.hoursEstimate} hours
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+            <label className="block text-sm">Your hourly rate *</label>
+            <div className="relative">
+              <span className="absolute left-3 top-3">£</span>
+              <input
+                type="number"
+                name="hourlyRate"
+                value={projectData.hourlyRate}
+                onChange={handleInputChange}
+                className="w-full p-3 pl-6 border border-gray-300 rounded-md bg-[#F8F9FA]"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                required
+              />
             </div>
           </div>
-        )}
 
-        {/* Total Cost */}
-        <div className="text-center">
-          Total cost: £{projectData.totalCost.toFixed(2)}
-        </div>
+          {/* Tasks Checkbox */}
+          <div>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={includeTasks}
+                onChange={(e) => setIncludeTasks(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <span>Do you want to add tasks to your project?</span>
+            </label>
+          </div>
 
-        {/* View Summary Button */}
-        <div className="flex justify-center">
-          <button
-            type="button"
-            className="bg-slate-600 text-white px-6 py-3 rounded hover:bg-slate-700 transition-colors"
-          >
-            View project summary
-          </button>
-        </div>
+          {includeTasks && (
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={() => setShowTaskModal(true)}
+                className="flex-1 bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
+              >
+                Add new task
+              </button>
+              <button
+                type="button"
+                className="flex-1 bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
+              >
+                Add other costs
+              </button>
+            </div>
+          )}
 
-        {/* Form Actions */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="bg-[#4CAF50] text-white px-4 py-2 rounded hover:bg-[#45A049] transition-colors"
-          >
-            Create Project
-          </button>
-        </div>
-      </form>
+          {/* Display Tasks */}
+          {projectData.tasks.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-base font-medium mb-2">Tasks</h3>
+              <div className="space-y-2">
+                {projectData.tasks.map((task, index) => (
+                  <div key={index} className="p-3">
+                    <p className="font-medium">{task.name}</p>
+                    <p className="text-sm text-gray-600">
+                      {task.hoursEstimate} hours estimated
+                    </p>
+                    {task.subtasks && task.subtasks.length > 0 && (
+                      <div className="mt-2 ml-4">
+                        {task.subtasks.map((subtask, idx) => (
+                          <p key={idx} className="text-sm text-gray-600">
+                            - {subtask.name}: {subtask.hoursEstimate} hours
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Total Cost */}
+          <div className="text-center">
+            Total cost: £{projectData.totalCost.toFixed(2)}
+          </div>
+
+          {/* View Summary Button */}
+          <div className="flex justify-center">
+            <button
+              type="button"
+              className="bg-slate-600 text-white px-6 py-3 rounded hover:bg-slate-700 transition-colors"
+            >
+              View project summary
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Sticky footer */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          className="bg-[#4CAF50] text-white px-4 py-2 rounded hover:bg-[#45A049] transition-colors"
+        >
+          Create Project
+        </button>
+      </div>
 
       {/* Task Creation Modal */}
       <Modal isOpen={showTaskModal} onClose={() => setShowTaskModal(false)}>
