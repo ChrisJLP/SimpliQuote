@@ -1,280 +1,204 @@
-import React, { useState } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
+import FormInput from "../../components/FormInput";
 import CreateTaskForm from "../Task/CreateTask";
+import CreateCostsForm from "../Costs/CreateCosts";
+import { useProjectForm } from "../../hooks/useForm";
 
 const CreateProjectForm = ({ onSubmit, onCancel }) => {
-  const [projectData, setProjectData] = useState({
-    name: "",
-    hourlyRate: "",
-    hoursEstimate: "",
-    tasks: [],
-    otherCosts: [],
-    totalCost: 0,
-  });
-  const [includeTasks, setIncludeTasks] = useState(false);
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [savedTasks, setSavedTasks] = useState([]);
-  const [previousHoursEstimate, setPreviousHoursEstimate] = useState("");
+  const {
+    formData,
+    includeTasks,
+    showCostsModal,
+    setShowCostsModal,
+    handleInputChange,
+    handleAddTask: originalHandleAddTask,
+    handleAddCosts,
+    toggleTasks,
+  } = useProjectForm();
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProjectData((prev) => {
-      const updatedData = {
-        ...prev,
-        [name]: value,
-      };
-      if (name === "hourlyRate" || name === "hoursEstimate") {
-        return {
-          ...updatedData,
-          totalCost: !includeTasks
-            ? (parseFloat(updatedData.hourlyRate) || 0) *
-              (parseFloat(updatedData.hoursEstimate) || 0)
-            : calculateTotalCost(
-                prev.tasks,
-                prev.otherCosts,
-                updatedData.hourlyRate
-              ),
-        };
-      }
-      return updatedData;
-    });
-  };
+  const [showTaskModal, setShowTaskModal] = React.useState(false);
 
   const handleAddTask = (taskData) => {
-    setProjectData((prev) => {
-      const newTask = {
-        ...taskData,
-        hoursEstimate: parseFloat(taskData.hoursEstimate) || 0,
-        subtasks: taskData.subtasks.map((st) => ({
-          ...st,
-          hoursEstimate: parseFloat(st.hoursEstimate) || 0,
-        })),
-      };
-
-      const updatedTasks = [...prev.tasks, newTask];
-      const newTotalCost = calculateTotalCost(
-        updatedTasks,
-        prev.otherCosts,
-        prev.hourlyRate
-      );
-
-      return {
-        ...prev,
-        tasks: updatedTasks,
-        totalCost: newTotalCost,
-      };
-    });
+    originalHandleAddTask(taskData);
     setShowTaskModal(false);
-  };
-
-  const calculateTotalCost = (tasks, otherCosts, hourlyRate) => {
-    const rate = parseFloat(hourlyRate) || 0;
-
-    const tasksCost = tasks.reduce((sum, task) => {
-      const taskHours = parseFloat(task.hoursEstimate) || 0;
-      const subtaskHours =
-        task.subtasks?.reduce(
-          (subtaskSum, subtask) =>
-            subtaskSum + (parseFloat(subtask.hoursEstimate) || 0),
-          0
-        ) || 0;
-      return sum + (taskHours + subtaskHours) * rate;
-    }, 0);
-
-    const additionalCosts = otherCosts.reduce(
-      (sum, cost) => sum + (parseFloat(cost.amount) || 0),
-      0
-    );
-
-    return tasksCost + additionalCosts;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const finalProjectData = {
-      ...projectData,
-      tasks: includeTasks ? projectData.tasks : savedTasks,
-    };
-    onSubmit(finalProjectData);
+    onSubmit(formData);
   };
 
   return (
-    <div className="p-6 min-h-0">
-      <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
+    <div className="flex flex-col h-full">
+      <div className="overflow-y-auto p-6 pb-24">
+        <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Project Name Input */}
-        <div className="space-y-2">
-          <label className="block text-sm">Project name *</label>
-          <input
-            type="text"
+        <form className="space-y-6">
+          {/* Project Name Input */}
+          <FormInput
+            label="Project name"
             name="name"
-            value={projectData.name}
+            value={formData.name}
             onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded-md bg-[#F8F9FA]"
             required
           />
-        </div>
 
-        {/* Hourly Rate Input */}
-        <div className="space-y-2">
-          <label className="block text-sm">Your hourly rate *</label>
-          <div className="relative">
-            <span className="absolute left-3 top-3">£</span>
-            <input
-              type="number"
-              name="hourlyRate"
-              value={projectData.hourlyRate}
-              onChange={handleInputChange}
-              className="w-full p-3 pl-6 border border-gray-300 rounded-md bg-[#F8F9FA]"
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
-        </div>
+          {/* Hourly Rate Input */}
+          <FormInput
+            label="Your hourly rate"
+            name="hourlyRate"
+            type="number"
+            value={formData.hourlyRate}
+            onChange={handleInputChange}
+            prefix="£"
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            required
+          />
 
-        {/* Hours Estimate - Only shown when no tasks */}
-        {!includeTasks && (
-          <div className="space-y-2">
-            <label className="block text-sm">Hours estimate *</label>
-            <input
-              type="number"
+          {/* Hours Estimate - Only shown when no tasks */}
+          {!includeTasks && (
+            <FormInput
+              label="Hours estimate"
               name="hoursEstimate"
-              value={projectData.hoursEstimate}
+              type="number"
+              value={formData.hoursEstimate}
               onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-md bg-[#F8F9FA]"
               placeholder="0.0"
               min="0"
               step="0.5"
               required
             />
+          )}
+
+          {/* Tasks Checkbox */}
+          <div>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={includeTasks}
+                onChange={(e) => toggleTasks(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <span>Do you want to add tasks to your project?</span>
+            </label>
           </div>
-        )}
 
-        {/* Tasks Checkbox */}
-        <div>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={includeTasks}
-              onChange={(e) => {
-                setIncludeTasks(e.target.checked);
-                if (e.target.checked) {
-                  // Save current hours estimate and restore tasks
-                  setPreviousHoursEstimate(projectData.hoursEstimate);
-                  setProjectData((prev) => ({
-                    ...prev,
-                    tasks: savedTasks,
-                    hoursEstimate: "", // Clear hours estimate when switching to tasks
-                  }));
-                } else {
-                  // Save tasks and restore previous hours estimate
-                  setSavedTasks(projectData.tasks);
-                  setProjectData((prev) => ({
-                    ...prev,
-                    tasks: [],
-                    hoursEstimate: previousHoursEstimate,
-                  }));
-                }
-              }}
-              className="rounded border-gray-300"
-            />
-            <span>Do you want to add tasks to your project?</span>
-          </label>
-        </div>
-
-        {includeTasks && (
-          <>
-            <div className="flex justify-center space-x-4">
-              <button
-                type="button"
-                onClick={() => setShowTaskModal(true)}
-                className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
-              >
-                Add new task
-              </button>
-              <button
-                type="button"
-                className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
-              >
-                Add other costs
-              </button>
-            </div>
-
-            {/* Display Tasks */}
-            {projectData.tasks.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-base font-medium mb-2">Tasks</h3>
-                <div className="space-y-2">
-                  {projectData.tasks.map((task, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-md">
-                      <p className="font-medium">{task.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {task.hoursEstimate} hours estimated
-                      </p>
-                      {task.subtasks && task.subtasks.length > 0 && (
-                        <div className="mt-2 ml-4">
-                          {task.subtasks.map((subtask, idx) => (
-                            <p key={idx} className="text-sm text-gray-600">
-                              - {subtask.name}: {subtask.hoursEstimate} hours
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+          {includeTasks && (
+            <>
+              <div className="flex justify-center space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setShowTaskModal(true)}
+                  className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
+                >
+                  Add new task
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCostsModal(true)}
+                  className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
+                >
+                  Add other costs
+                </button>
               </div>
-            )}
-          </>
-        )}
 
-        {/* Total Cost */}
-        <div className="text-center">
-          Total cost: £{projectData.totalCost.toFixed(2)}
-        </div>
+              {/* Display Tasks */}
+              {formData.tasks.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-base font-medium mb-2">Tasks</h3>
+                  <div className="space-y-2">
+                    {formData.tasks.map((task, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-md">
+                        <p className="font-medium">{task.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {task.hoursEstimate} hours estimated
+                        </p>
+                        {task.subtasks && task.subtasks.length > 0 && (
+                          <div className="mt-2 ml-4">
+                            {task.subtasks.map((subtask, idx) => (
+                              <p key={idx} className="text-sm text-gray-600">
+                                - {subtask.name}: {subtask.hoursEstimate} hours
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-        {/* View Summary Button */}
-        <div className="flex justify-center">
-          <button
-            type="button"
-            className="bg-slate-600 text-white px-6 py-3 rounded hover:bg-slate-700 transition-colors"
-          >
-            View project summary
-          </button>
-        </div>
+              {/* Display Other Costs */}
+              {formData.otherCosts.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-base font-medium mb-2">Other Costs</h3>
+                  <div className="space-y-2">
+                    {formData.otherCosts.map((cost, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-md">
+                        <p className="font-medium">{cost.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {cost.category} - £{cost.amount.toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
 
-        {/* Form Actions */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="bg-[#4CAF50] text-white px-4 py-2 rounded hover:bg-[#45A049] transition-colors"
-          >
-            Create Project
-          </button>
-        </div>
-      </form>
+          {/* Total Cost */}
+          <div className="text-center">
+            Total cost: £{formData.totalCost.toFixed(2)}
+          </div>
+
+          {/* View Summary Button */}
+          <div className="flex justify-center">
+            <Button variant="secondary" className="px-6 py-3">
+              View project summary
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      {/* Sticky footer */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button variant="primary" onClick={handleSubmit}>
+          Create Project
+        </Button>
+      </div>
 
       {/* Task Creation Modal */}
       <Modal isOpen={showTaskModal} onClose={() => setShowTaskModal(false)}>
         <CreateTaskForm
-          projectId={projectData.id}
           onSubmit={handleAddTask}
           onCancel={() => setShowTaskModal(false)}
         />
       </Modal>
+
+      {/* Costs Creation Modal */}
+      <Modal isOpen={showCostsModal} onClose={() => setShowCostsModal(false)}>
+        <CreateCostsForm
+          existingCosts={formData.otherCosts}
+          onSubmit={handleAddCosts}
+          onCancel={() => setShowCostsModal(false)}
+        />
+      </Modal>
     </div>
   );
+};
+
+CreateProjectForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
 };
 
 export default CreateProjectForm;
