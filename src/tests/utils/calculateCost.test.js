@@ -3,6 +3,8 @@ import {
   calculateTotalCost,
   calculateProjectCost,
   calculateTotalHours,
+  calculateTaskCostsTotal,
+  calculateOtherCostsTotal,
 } from "../../utils/calculateCost";
 
 describe("Cost Calculation Utilities", () => {
@@ -40,28 +42,68 @@ describe("Cost Calculation Utilities", () => {
     });
   });
 
-  describe("calculateTotalCost", () => {
-    it("calculates total cost correctly with tasks and hourly rate", () => {
+  describe("calculateTaskCostsTotal", () => {
+    it("calculates total costs from all tasks", () => {
       const tasks = [
-        { hoursEstimate: 5, subtasks: [] },
+        {
+          hoursEstimate: 5,
+          otherCosts: [{ amount: 100 }, { amount: 50 }],
+        },
+        {
+          hoursEstimate: 3,
+          otherCosts: [{ amount: 75 }],
+        },
+      ];
+
+      // Should be (100 + 50) + 75 = 225
+      expect(calculateTaskCostsTotal(tasks)).toBe(225);
+    });
+
+    it("handles tasks without other costs", () => {
+      const tasks = [
+        { hoursEstimate: 5 },
+        { hoursEstimate: 3, otherCosts: [] },
+      ];
+
+      expect(calculateTaskCostsTotal(tasks)).toBe(0);
+    });
+  });
+
+  describe("calculateTotalCost", () => {
+    it("calculates total cost including labor, project costs, and task costs", () => {
+      const tasks = [
+        {
+          hoursEstimate: 5,
+          subtasks: [],
+          otherCosts: [{ amount: 100 }, { amount: 50 }],
+        },
         {
           hoursEstimate: 7,
           subtasks: [{ hoursEstimate: 5 }, { hoursEstimate: 2 }],
+          otherCosts: [{ amount: 75 }],
         },
       ];
+      const projectCosts = [{ amount: 200 }];
       const hourlyRate = 25;
 
-      // Should be 12 hours * £25 = £300
-      expect(calculateTotalCost(tasks, [], hourlyRate)).toBe(300);
+      // Labor cost: 12 hours * £25 = £300
+      // Project costs: £200
+      // Task costs: (100 + 50 + 75) = £225
+      // Total: £725
+      expect(calculateTotalCost(tasks, projectCosts, hourlyRate)).toBe(725);
     });
 
-    it("includes other costs in total", () => {
-      const tasks = [{ hoursEstimate: 2, subtasks: [] }];
-      const otherCosts = [{ amount: 100 }, { amount: 50 }];
+    it("handles missing cost arrays", () => {
+      const tasks = [
+        {
+          hoursEstimate: 2,
+          subtasks: [],
+        },
+      ];
       const hourlyRate = 10;
 
-      // Should be (2 hours * £10) + £150 = £170
-      expect(calculateTotalCost(tasks, otherCosts, hourlyRate)).toBe(170);
+      // Should be just labor cost: 2 * 10 = 20
+      expect(calculateTotalCost(tasks, undefined, hourlyRate)).toBe(20);
     });
   });
 

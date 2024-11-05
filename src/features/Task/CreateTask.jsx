@@ -1,37 +1,107 @@
-import React, { useState } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 import Button from "../../components/Button";
+import Modal from "../../components/Modal";
+import CreateCostsForm from "../Costs/CreateCosts";
+import { useTaskForm } from "../../hooks/useForm";
 
-const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
-  const [taskName, setTaskName] = useState("");
-  const [hasSubtasks, setHasSubtasks] = useState(false);
-  const [confirmedSubtasks, setConfirmedSubtasks] = useState([]);
-  const [currentSubtask, setCurrentSubtask] = useState(null);
-  const [singleHoursEstimate, setSingleHoursEstimate] = useState("");
-  const [previousSingleHoursEstimate, setPreviousSingleHoursEstimate] =
-    useState("");
+const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
+  const {
+    formData,
+    hasSubtasks,
+    showCostsModal,
+    setShowCostsModal,
+    handleInputChange,
+    handleAddCosts,
+    toggleSubtasks,
+    confirmedSubtasks,
+    updateSubtasks, // Ensure this is available from useTaskForm
+    handleEditSubtask,
+    handleConfirmSubtask,
+    handleRemoveSubtask,
+  } = useTaskForm(initialData);
 
+  // State to manage the current subtask being added or edited
+  const [currentSubtask, setCurrentSubtask] = React.useState(null);
+  const [subtaskError, setSubtaskError] = React.useState("");
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editingSubtaskIndex, setEditingSubtaskIndex] = React.useState(null); // New state to track editing index
+
+  // Initialize subtasks if editing
+  React.useEffect(() => {
+    if (initialData?.subtasks?.length > 0) {
+      toggleSubtasks(true);
+    }
+  }, [initialData, toggleSubtasks]);
+
+  // Handler to initiate adding a new subtask
   const handleAddSubtask = () => {
     setCurrentSubtask({ name: "", hoursEstimate: "" });
+    setSubtaskError("");
+    setIsEditing(false);
+    setEditingSubtaskIndex(null);
   };
 
-  const handleConfirmSubtask = () => {
-    if (currentSubtask && currentSubtask.name && currentSubtask.hoursEstimate) {
-      setConfirmedSubtasks([...confirmedSubtasks, currentSubtask]);
+  // Validation for subtask inputs
+  const validateSubtask = (subtask) => {
+    if (!subtask.name.trim()) {
+      setSubtaskError("Subtask name is required");
+      return false;
+    }
+    if (!subtask.hoursEstimate || parseFloat(subtask.hoursEstimate) <= 0) {
+      setSubtaskError("Valid hours estimate is required");
+      return false;
+    }
+    setSubtaskError("");
+    return true;
+  };
+
+  // Handler when confirming a subtask (both add and update)
+  const handleConfirmSubtaskClick = () => {
+    if (currentSubtask && validateSubtask(currentSubtask)) {
+      if (isEditing && editingSubtaskIndex !== null) {
+        handleUpdateSubtask(editingSubtaskIndex, currentSubtask);
+      } else {
+        handleConfirmSubtask(currentSubtask);
+      }
       setCurrentSubtask(null);
+      setSubtaskError("");
+      setIsEditing(false);
+      setEditingSubtaskIndex(null);
     }
   };
 
-  const handleRemoveSubtask = (index) => {
-    const newSubtasks = [...confirmedSubtasks];
-    newSubtasks.splice(index, 1);
-    setConfirmedSubtasks(newSubtasks);
+  // Handler to initiate editing a subtask
+  const handleEditSubtaskClick = (index) => {
+    const subtaskToEdit = handleEditSubtask(index);
+    setCurrentSubtask(subtaskToEdit);
+    setSubtaskError("");
+    setIsEditing(true);
+    setEditingSubtaskIndex(index);
   };
 
-  const handleEditSubtask = (index) => {
-    setCurrentSubtask(confirmedSubtasks[index]);
-    handleRemoveSubtask(index);
+  // Function to update an existing subtask
+  const handleUpdateSubtask = (index, updatedSubtask) => {
+    const updatedSubtasks = confirmedSubtasks.map((subtask, i) =>
+      i === index
+        ? {
+            ...updatedSubtask,
+            hoursEstimate: parseFloat(updatedSubtask.hoursEstimate) || 0,
+          }
+        : subtask
+    );
+    updateSubtasks(updatedSubtasks);
   };
 
+  // Handler to cancel adding or editing a subtask
+  const handleCancelSubtask = () => {
+    setCurrentSubtask(null);
+    setSubtaskError("");
+    setIsEditing(false);
+    setEditingSubtaskIndex(null);
+  };
+
+  // Function to calculate total hours from confirmed subtasks
   const calculateTotalHours = () => {
     return confirmedSubtasks.reduce(
       (sum, subtask) => sum + (parseFloat(subtask.hoursEstimate) || 0),
@@ -39,11 +109,12 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
     );
   };
 
+  // Handler for form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     if (currentSubtask?.name || currentSubtask?.hoursEstimate) {
       if (
-        !confirm(
+        !window.confirm(
           "You have an unconfirmed subtask. Do you want to continue without it?"
         )
       ) {
@@ -51,12 +122,11 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
       }
     }
     const taskData = {
-      projectId,
-      name: taskName,
+      ...formData,
       subtasks: hasSubtasks ? confirmedSubtasks : [],
       hoursEstimate: hasSubtasks
         ? calculateTotalHours()
-        : parseFloat(singleHoursEstimate) || 0,
+        : parseFloat(formData.hoursEstimate) || 0,
     };
     onSubmit(taskData);
   };
@@ -64,7 +134,9 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="overflow-y-auto p-6 pb-24">
-        <h2 className="text-2xl font-medium mb-6">Create a Task</h2>
+        <h2 className="text-2xl font-medium mb-6">
+          {initialData ? "Edit Task" : "Create a Task"}
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Task Name Input */}
@@ -72,8 +144,9 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
             <label className="block text-sm">Task name *</label>
             <input
               type="text"
-              value={taskName}
-              onChange={(e) => setTaskName(e.target.value)}
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
               required
               placeholder="Enter task name"
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -86,8 +159,9 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
               <label className="block text-sm">Hours estimate *</label>
               <input
                 type="number"
-                value={singleHoursEstimate}
-                onChange={(e) => setSingleHoursEstimate(e.target.value)}
+                name="hoursEstimate"
+                value={formData.hoursEstimate}
+                onChange={handleInputChange}
                 required
                 min="0"
                 step="0.5"
@@ -103,20 +177,7 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
               <input
                 type="checkbox"
                 checked={hasSubtasks}
-                onChange={(e) => {
-                  setHasSubtasks(e.target.checked);
-                  if (e.target.checked) {
-                    // Store current single estimate before switching to subtasks
-                    setPreviousSingleHoursEstimate(singleHoursEstimate);
-                    setSingleHoursEstimate("");
-                  } else {
-                    // Restore previous single estimate when disabling subtasks
-                    setSingleHoursEstimate(previousSingleHoursEstimate);
-                    // Clear any in-progress subtask
-                    setCurrentSubtask(null);
-                    // Keep confirmedSubtasks in memory
-                  }
-                }}
+                onChange={(e) => toggleSubtasks(e.target.checked)}
                 className="rounded border-gray-300"
               />
               <span>Do you want to add subtasks?</span>
@@ -140,11 +201,25 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
                         <p className="text-sm text-gray-600">
                           {subtask.hoursEstimate} hours
                         </p>
+                        {/* Display subtask costs if any */}
+                        {subtask.otherCosts?.length > 0 && (
+                          <div className="mt-1">
+                            {subtask.otherCosts.map((cost, costIdx) => (
+                              <p
+                                key={costIdx}
+                                className="text-sm text-gray-600"
+                              >
+                                · {cost.name}: £{cost.amount.toFixed(2)} (
+                                {cost.category})
+                              </p>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="flex space-x-2">
                         <button
                           type="button"
-                          onClick={() => handleEditSubtask(index)}
+                          onClick={() => handleEditSubtaskClick(index)}
                           className="text-blue-600 hover:text-blue-800"
                         >
                           Edit
@@ -177,7 +252,11 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
                         })
                       }
                       placeholder="Enter subtask name"
-                      className="w-full p-3 border border-gray-300 rounded-md"
+                      className={`w-full p-3 border ${
+                        subtaskError && !currentSubtask.name
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded-md`}
                     />
                   </div>
                   <div>
@@ -194,23 +273,30 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
                       min="0"
                       step="0.5"
                       placeholder="0.0"
-                      className="w-full p-3 border border-gray-300 rounded-md"
+                      className={`w-full p-3 border ${
+                        subtaskError && !currentSubtask.hoursEstimate
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded-md`}
                     />
                   </div>
+                  {subtaskError && (
+                    <p className="text-red-500 text-sm">{subtaskError}</p>
+                  )}
                   <div className="flex justify-end space-x-2 pt-2">
                     <button
                       type="button"
-                      onClick={() => setCurrentSubtask(null)}
+                      onClick={handleCancelSubtask}
                       className="text-gray-600 hover:text-gray-800"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
-                      onClick={handleConfirmSubtask}
+                      onClick={handleConfirmSubtaskClick}
                       className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
-                      Confirm Subtask
+                      {isEditing ? "Update Subtask" : "Confirm Subtask"}
                     </button>
                   </div>
                 </div>
@@ -231,6 +317,7 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
                 )}
                 <button
                   type="button"
+                  onClick={() => setShowCostsModal(true)}
                   className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
                 >
                   Add other costs
@@ -244,28 +331,78 @@ const CreateTaskForm = ({ projectId, onSubmit, onCancel }) => {
               )}
             </div>
           )}
+
+          {/* Display Task Other Costs */}
+          {formData.otherCosts?.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-base font-medium mb-2">Task Costs</h3>
+              <div className="space-y-2">
+                {formData.otherCosts.map((cost, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-md">
+                    <p className="font-medium">{cost.name}</p>
+                    <p className="text-sm text-gray-600">
+                      {cost.category} - £{cost.amount.toFixed(2)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </form>
       </div>
 
       {/* Sticky footer */}
       <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-gray-600 hover:text-gray-800"
-        >
+        <Button variant="outline" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="bg-[#4CAF50] text-white px-4 py-2 rounded hover:bg-[#45A049] transition-colors"
-        >
-          Save Task
-        </button>
+        </Button>
+        <Button variant="primary" onClick={handleSubmit}>
+          {initialData ? "Update Task" : "Save Task"}
+        </Button>
       </div>
+
+      {/* Costs Creation Modal */}
+      <Modal isOpen={showCostsModal} onClose={() => setShowCostsModal(false)}>
+        <CreateCostsForm
+          existingCosts={formData.otherCosts}
+          onSubmit={handleAddCosts}
+          onCancel={() => setShowCostsModal(false)}
+        />
+      </Modal>
     </div>
   );
+};
+
+CreateTaskForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  initialData: PropTypes.shape({
+    name: PropTypes.string,
+    hoursEstimate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    subtasks: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string,
+        hoursEstimate: PropTypes.oneOfType([
+          PropTypes.string,
+          PropTypes.number,
+        ]),
+        otherCosts: PropTypes.arrayOf(
+          PropTypes.shape({
+            name: PropTypes.string,
+            amount: PropTypes.number,
+            category: PropTypes.string,
+          })
+        ),
+      })
+    ),
+    otherCosts: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string,
+        amount: PropTypes.number,
+        category: PropTypes.string,
+      })
+    ),
+  }),
 };
 
 export default CreateTaskForm;

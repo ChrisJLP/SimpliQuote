@@ -21,7 +21,15 @@ export const calculateOtherCostsTotal = (costs = []) => {
   }, 0);
 };
 
-// Calculate total project cost including tasks and other costs
+// Calculate total costs from all tasks' other costs
+export const calculateTaskCostsTotal = (tasks = []) => {
+  return tasks.reduce((total, task) => {
+    const taskOtherCosts = task.otherCosts || [];
+    return total + calculateOtherCostsTotal(taskOtherCosts);
+  }, 0);
+};
+
+// Calculate total project cost including tasks, their costs, and project-level costs
 export const calculateTotalCost = (
   tasks = [],
   otherCosts = [],
@@ -29,9 +37,10 @@ export const calculateTotalCost = (
 ) => {
   const totalHours = calculateTotalHours(tasks);
   const laborCost = totalHours * (parseFloat(hourlyRate) || 0);
-  const otherCostsTotal = calculateOtherCostsTotal(otherCosts);
+  const projectOtherCosts = calculateOtherCostsTotal(otherCosts);
+  const taskCosts = calculateTaskCostsTotal(tasks);
 
-  return laborCost + otherCostsTotal;
+  return laborCost + projectOtherCosts + taskCosts;
 };
 
 // Calculate simple project cost without tasks
