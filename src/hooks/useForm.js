@@ -4,31 +4,44 @@ import {
   calculateProjectCost,
 } from "../utils/calculateCost";
 
+const DEFAULT_PROJECT_STATE = {
+  name: "",
+  hourlyRate: "",
+  hoursEstimate: "",
+  tasks: [],
+  otherCosts: [],
+  totalCost: 0,
+};
+
 export const useProjectForm = (initialData = {}) => {
   const [formData, setFormData] = useState({
-    name: "",
-    hourlyRate: "",
-    hoursEstimate: "",
-    tasks: [],
-    otherCosts: [],
-    totalCost: 0,
+    ...DEFAULT_PROJECT_STATE,
     ...initialData,
   });
 
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
   const [includeTasks, setIncludeTasks] = useState(false);
   const [savedTasks, setSavedTasks] = useState([]);
   const [previousHoursEstimate, setPreviousHoursEstimate] = useState("");
   const [showCostsModal, setShowCostsModal] = useState(false);
+
+  const hasFormChanges = useCallback(() => {
+    return (
+      formData.name !== DEFAULT_PROJECT_STATE.name ||
+      formData.hourlyRate !== DEFAULT_PROJECT_STATE.hourlyRate ||
+      formData.hoursEstimate !== DEFAULT_PROJECT_STATE.hoursEstimate ||
+      formData.tasks.length > 0 ||
+      formData.otherCosts.length > 0
+    );
+  }, [formData]);
 
   const handleInputChange = useCallback(
     (e) => {
       const { name, value } = e.target;
 
       setFormData((prev) => {
-        const updatedData = {
-          ...prev,
-          [name]: value,
-        };
+        const updatedData = { ...prev, [name]: value };
 
         if (name === "hourlyRate" || name === "hoursEstimate") {
           return {
@@ -45,7 +58,6 @@ export const useProjectForm = (initialData = {}) => {
                 ),
           };
         }
-
         return updatedData;
       });
     },
@@ -176,6 +188,31 @@ export const useProjectForm = (initialData = {}) => {
     });
   }, []);
 
+  const confirmCancel = useCallback(
+    (onCancel) => {
+      if (!hasFormChanges()) {
+        onCancel();
+        return;
+      }
+
+      setShowWarningModal(true);
+      setPendingAction(() => onCancel);
+    },
+    [hasFormChanges]
+  );
+
+  const handleWarningClose = useCallback(() => {
+    setShowWarningModal(false);
+    setPendingAction(null);
+  }, []);
+
+  const handleWarningConfirm = useCallback(() => {
+    if (pendingAction) {
+      pendingAction();
+    }
+    handleWarningClose();
+  }, [pendingAction, handleWarningClose]);
+
   return {
     formData,
     includeTasks,
@@ -188,7 +225,10 @@ export const useProjectForm = (initialData = {}) => {
     handleUpdateTask,
     handleAddCosts,
     toggleTasks,
-    setFormData,
+    confirmCancel,
+    showWarningModal,
+    handleWarningClose,
+    handleWarningConfirm,
   };
 };
 

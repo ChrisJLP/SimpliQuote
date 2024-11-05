@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
+import WarningModal from "../../components/WarningModal";
 import FormInput from "../../components/FormInput";
 import CreateTaskForm from "../Task/CreateTask";
 import CreateCostsForm from "../Costs/CreateCosts";
@@ -20,6 +21,10 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
     handleUpdateTask,
     handleAddCosts,
     toggleTasks,
+    confirmCancel,
+    showWarningModal,
+    handleWarningClose,
+    handleWarningConfirm,
   } = useProjectForm();
 
   const [showTaskModal, setShowTaskModal] = React.useState(false);
@@ -239,7 +244,7 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
 
       {/* Sticky footer */}
       <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
-        <Button variant="outline" onClick={onCancel}>
+        <Button variant="outline" onClick={() => confirmCancel(onCancel)}>
           Cancel
         </Button>
         <Button variant="primary" onClick={handleSubmit}>
@@ -247,14 +252,19 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
         </Button>
       </div>
 
-      {/* Task Creation Modal */}
-      <Modal
-        isOpen={showTaskModal}
-        onClose={() => {
-          setShowTaskModal(false);
-          setEditingTaskIndex(null);
-        }}
-      >
+      {/* Warning Modal */}
+      <WarningModal
+        isOpen={showWarningModal}
+        onClose={handleWarningClose}
+        onConfirm={handleWarningConfirm}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Are you sure you want to cancel?"
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep Editing"
+      />
+
+      {/* Task Modal */}
+      <Modal isOpen={showTaskModal} onClose={() => setShowTaskModal(false)}>
         <CreateTaskForm
           initialData={
             editingTaskIndex !== null
