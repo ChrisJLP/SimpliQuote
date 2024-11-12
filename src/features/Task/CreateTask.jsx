@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
+import WarningModal from "../../components/WarningModal";
 import CreateCostsForm from "../Costs/CreateCosts";
 import { useTaskForm } from "../../hooks/useForm";
 
@@ -15,26 +16,26 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     handleAddCosts,
     toggleSubtasks,
     confirmedSubtasks,
-    updateSubtasks, // Ensure this is available from useTaskForm
+    updateSubtasks,
     handleEditSubtask,
     handleConfirmSubtask,
     handleRemoveSubtask,
   } = useTaskForm(initialData);
 
-  // State to manage the current subtask being added or edited
   const [currentSubtask, setCurrentSubtask] = React.useState(null);
   const [subtaskError, setSubtaskError] = React.useState("");
   const [isEditing, setIsEditing] = React.useState(false);
-  const [editingSubtaskIndex, setEditingSubtaskIndex] = React.useState(null); // New state to track editing index
+  const [editingSubtaskIndex, setEditingSubtaskIndex] = React.useState(null);
+  const [showDeleteSubtaskModal, setShowDeleteSubtaskModal] =
+    React.useState(false);
+  const [subtaskToDelete, setSubtaskToDelete] = React.useState(null);
 
-  // Initialize subtasks if editing
   React.useEffect(() => {
     if (initialData?.subtasks?.length > 0) {
       toggleSubtasks(true);
     }
   }, [initialData, toggleSubtasks]);
 
-  // Handler to initiate adding a new subtask
   const handleAddSubtask = () => {
     setCurrentSubtask({ name: "", hoursEstimate: "" });
     setSubtaskError("");
@@ -42,7 +43,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     setEditingSubtaskIndex(null);
   };
 
-  // Validation for subtask inputs
   const validateSubtask = (subtask) => {
     if (!subtask.name.trim()) {
       setSubtaskError("Subtask name is required");
@@ -56,7 +56,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     return true;
   };
 
-  // Handler when confirming a subtask (both add and update)
   const handleConfirmSubtaskClick = () => {
     if (currentSubtask && validateSubtask(currentSubtask)) {
       if (isEditing && editingSubtaskIndex !== null) {
@@ -71,7 +70,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     }
   };
 
-  // Handler to initiate editing a subtask
   const handleEditSubtaskClick = (index) => {
     const subtaskToEdit = handleEditSubtask(index);
     setCurrentSubtask(subtaskToEdit);
@@ -80,7 +78,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     setEditingSubtaskIndex(index);
   };
 
-  // Function to update an existing subtask
   const handleUpdateSubtask = (index, updatedSubtask) => {
     const updatedSubtasks = confirmedSubtasks.map((subtask, i) =>
       i === index
@@ -93,7 +90,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     updateSubtasks(updatedSubtasks);
   };
 
-  // Handler to cancel adding or editing a subtask
   const handleCancelSubtask = () => {
     setCurrentSubtask(null);
     setSubtaskError("");
@@ -101,7 +97,14 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     setEditingSubtaskIndex(null);
   };
 
-  // Function to calculate total hours from confirmed subtasks
+  const handleConfirmSubtaskDelete = () => {
+    if (subtaskToDelete !== null) {
+      handleRemoveSubtask(subtaskToDelete);
+      setSubtaskToDelete(null);
+      setShowDeleteSubtaskModal(false);
+    }
+  };
+
   const calculateTotalHours = () => {
     return confirmedSubtasks.reduce(
       (sum, subtask) => sum + (parseFloat(subtask.hoursEstimate) || 0),
@@ -109,7 +112,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     );
   };
 
-  // Handler for form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     if (currentSubtask?.name || currentSubtask?.hoursEstimate) {
@@ -187,7 +189,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
           {/* Subtasks Section */}
           {hasSubtasks && (
             <div className="space-y-4">
-              {/* List of confirmed subtasks */}
               {confirmedSubtasks.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="font-medium">Subtasks:</h3>
@@ -201,7 +202,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                         <p className="text-sm text-gray-600">
                           {subtask.hoursEstimate} hours
                         </p>
-                        {/* Display subtask costs if any */}
                         {subtask.otherCosts?.length > 0 && (
                           <div className="mt-1">
                             {subtask.otherCosts.map((cost, costIdx) => (
@@ -220,13 +220,16 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                         <button
                           type="button"
                           onClick={() => handleEditSubtaskClick(index)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-slate-600 hover:text-slate-800"
                         >
                           Edit
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleRemoveSubtask(index)}
+                          onClick={() => {
+                            setSubtaskToDelete(index);
+                            setShowDeleteSubtaskModal(true);
+                          }}
                           className="text-red-600 hover:text-red-800"
                         >
                           Remove
@@ -291,13 +294,12 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                     >
                       Cancel
                     </button>
-                    <button
-                      type="button"
+                    <Button
+                      variant="secondary"
                       onClick={handleConfirmSubtaskClick}
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
                       {isEditing ? "Update Subtask" : "Confirm Subtask"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -369,6 +371,17 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
           onCancel={() => setShowCostsModal(false)}
         />
       </Modal>
+
+      {/* Delete Subtask Warning Modal */}
+      <WarningModal
+        isOpen={showDeleteSubtaskModal}
+        onClose={() => setShowDeleteSubtaskModal(false)}
+        onConfirm={handleConfirmSubtaskDelete}
+        title="Delete Subtask"
+        message="Are you sure you want to delete this subtask? This action cannot be undone."
+        confirmText="Delete Subtask"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

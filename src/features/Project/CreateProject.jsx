@@ -29,6 +29,8 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
 
   const [showTaskModal, setShowTaskModal] = React.useState(false);
   const [editingTaskIndex, setEditingTaskIndex] = React.useState(null);
+  const [showDeleteTaskModal, setShowDeleteTaskModal] = React.useState(false);
+  const [taskToDelete, setTaskToDelete] = React.useState(null);
 
   const handleAddTask = (taskData) => {
     if (editingTaskIndex !== null) {
@@ -45,9 +47,17 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
     setEditingTaskIndex(index);
     setShowTaskModal(true);
   };
+
   const handleRemoveClick = (index) => {
-    if (window.confirm("Are you sure you want to remove this task?")) {
-      handleRemoveTask(index);
+    setTaskToDelete(index);
+    setShowDeleteTaskModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (taskToDelete !== null) {
+      handleRemoveTask(taskToDelete);
+      setTaskToDelete(null);
+      setShowDeleteTaskModal(false);
     }
   };
 
@@ -287,6 +297,17 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
           onCancel={() => setShowCostsModal(false)}
         />
       </Modal>
+
+      {/* Delete Task Warning Modal */}
+      <WarningModal
+        isOpen={showDeleteTaskModal}
+        onClose={() => setShowDeleteTaskModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        confirmText="Delete Task"
+        cancelText="Cancel"
+      />
     </div>
   );
 };
