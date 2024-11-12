@@ -3,9 +3,26 @@ import CreateProjectForm from "../features/Project/CreateProject";
 import Button from "../components/Button";
 import Modal from "../components/Modal";
 import ProjectCard from "../components/ProjectCard";
+import WelcomeModal from "../components/WelcomeModal";
+import { useUserDetails } from "../hooks/useUserDetails";
 
 const Homepage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const {
+    userDetails,
+    showWelcomeModal,
+    setShowWelcomeModal,
+    saveUserDetails,
+    skipWelcome,
+  } = useUserDetails();
+
+  const handleWelcomeSubmit = (details) => {
+    saveUserDetails(details);
+  };
+
+  const handleWelcomeClose = () => {
+    skipWelcome();
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-[#2b314b] p-4">
@@ -43,6 +60,14 @@ const Homepage = () => {
         />
       </div>
 
+      {/* Welcome Modal */}
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        onClose={handleWelcomeClose}
+        onSubmit={handleWelcomeSubmit}
+      />
+
+      {/* Create Project Modal */}
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
         <CreateProjectForm
           onCancel={() => setShowCreateModal(false)}
