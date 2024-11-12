@@ -34,7 +34,7 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     if (initialData?.subtasks?.length > 0) {
       toggleSubtasks(true);
     }
-  }, [initialData, toggleSubtasks]);
+  }, []);
 
   const handleAddSubtask = () => {
     setCurrentSubtask({ name: "", hoursEstimate: "" });
