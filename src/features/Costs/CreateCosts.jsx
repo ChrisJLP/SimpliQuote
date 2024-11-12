@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
+import WarningModal from "../../components/WarningModal";
+import CustomDropdown from "../../components/CustomDropdown";
 
 const COST_CATEGORIES = [
   "Materials",
@@ -14,6 +16,9 @@ const COST_CATEGORIES = [
 
 const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
   const [costs, setCosts] = useState(existingCosts);
+  const [showDeleteCostModal, setShowDeleteCostModal] = useState(false);
+  const [costToDelete, setCostToDelete] = useState(null);
+
   const [currentCost, setCurrentCost] = useState({
     name: "",
     category: COST_CATEGORIES[0],
@@ -48,12 +53,20 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
   };
 
   const handleRemoveCost = (costId) => {
-    setCosts((prev) => prev.filter((cost) => cost.id !== costId));
+    setCostToDelete(costId);
+    setShowDeleteCostModal(true);
   };
-
   const handleEditCost = (cost) => {
     setCurrentCost(cost);
-    handleRemoveCost(cost.id);
+    setCosts((prev) => prev.filter((c) => c.id !== cost.id));
+  };
+
+  const handleConfirmDeleteCost = () => {
+    if (costToDelete !== null) {
+      setCosts((prev) => prev.filter((cost) => cost.id !== costToDelete));
+      setShowDeleteCostModal(false);
+      setCostToDelete(null);
+    }
   };
 
   const handleSave = () => {
@@ -86,19 +99,13 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
             />
 
             <div className="space-y-2">
-              <label className="block text-sm">Category</label>
-              <select
-                name="category"
-                value={currentCost.category}
-                onChange={handleInputChange}
-                className="w-full p-3 border border-gray-300 rounded-md bg-[#F8F9FA]"
-              >
-                {COST_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2">
+                <CustomDropdown
+                  options={COST_CATEGORIES}
+                  value={currentCost.category}
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
 
             <FormInput
@@ -132,16 +139,16 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Cost
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                         Actions
                       </th>
                     </tr>
@@ -149,19 +156,22 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {costs.map((cost) => (
                       <tr key={cost.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
                           {cost.name}
+                          <div className="sm:hidden text-xs text-gray-500 mt-1">
+                            {cost.category}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
                           {cost.category}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
                           £{cost.amount.toFixed(2)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-right">
                           <button
                             onClick={() => handleEditCost(cost)}
-                            className="text-blue-600 hover:text-blue-800 mr-4"
+                            className="text-slate-600 hover:text-slate-800 mr-2 sm:mr-4"
                           >
                             Edit
                           </button>
@@ -191,6 +201,16 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
           Save Costs
         </Button>
       </div>
+
+      <WarningModal
+        isOpen={showDeleteCostModal}
+        onClose={() => setShowDeleteCostModal(false)}
+        onConfirm={handleConfirmDeleteCost}
+        title="Delete Cost"
+        message="Are you sure you want to delete this cost? This action cannot be undone."
+        confirmText="Delete Cost"
+        cancelText="Cancel"
+      />
     </div>
   );
 };
