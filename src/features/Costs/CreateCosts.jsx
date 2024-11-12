@@ -25,6 +25,9 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
     amount: "",
   });
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCostId, setEditingCostId] = useState(null);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentCost((prev) => ({
@@ -33,17 +36,39 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
     }));
   };
 
+  const handleCategoryChange = (value) => {
+    setCurrentCost((prev) => ({
+      ...prev,
+      category: value,
+    }));
+  };
+
   const handleAddCost = () => {
     if (!currentCost.name || !currentCost.amount) return;
 
-    setCosts((prev) => [
-      ...prev,
-      {
-        ...currentCost,
-        id: Date.now(),
-        amount: parseFloat(currentCost.amount),
-      },
-    ]);
+    // Parse amount to ensure it's a number
+    const parsedAmount = parseFloat(currentCost.amount);
+
+    if (isNaN(parsedAmount)) {
+      alert("Please enter a valid number for the amount.");
+      return;
+    }
+
+    const newCost = {
+      ...currentCost,
+      id: isEditing ? editingCostId : Date.now(),
+      amount: parsedAmount,
+    };
+
+    if (isEditing) {
+      setCosts((prev) =>
+        prev.map((c) => (c.id === editingCostId ? newCost : c))
+      );
+      setIsEditing(false);
+      setEditingCostId(null);
+    } else {
+      setCosts((prev) => [...prev, newCost]);
+    }
 
     setCurrentCost({
       name: "",
@@ -56,9 +81,25 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
     setCostToDelete(costId);
     setShowDeleteCostModal(true);
   };
+
   const handleEditCost = (cost) => {
-    setCurrentCost(cost);
-    setCosts((prev) => prev.filter((c) => c.id !== cost.id));
+    setCurrentCost({
+      name: cost.name,
+      category: cost.category,
+      amount: cost.amount.toString(),
+    });
+    setIsEditing(true);
+    setEditingCostId(cost.id);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingCostId(null);
+    setCurrentCost({
+      name: "",
+      category: COST_CATEGORIES[0],
+      amount: "",
+    });
   };
 
   const handleConfirmDeleteCost = () => {
@@ -99,13 +140,11 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
             />
 
             <div className="space-y-2">
-              <div className="space-y-2">
-                <CustomDropdown
-                  options={COST_CATEGORIES}
-                  value={currentCost.category}
-                  onChange={handleInputChange}
-                />
-              </div>
+              <CustomDropdown
+                options={COST_CATEGORIES}
+                value={currentCost.category}
+                onChange={handleCategoryChange}
+              />
             </div>
 
             <FormInput
@@ -126,8 +165,17 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
                 onClick={handleAddCost}
                 className="w-full md:w-auto"
               >
-                Add cost to table
+                {isEditing ? "Update Cost" : "Add cost to table"}
               </Button>
+              {isEditing && (
+                <Button
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  className="w-full md:w-auto ml-2"
+                >
+                  Cancel Edit
+                </Button>
+              )}
             </div>
           </div>
 

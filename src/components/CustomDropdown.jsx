@@ -17,7 +17,7 @@ const CustomDropdown = ({ options, value, onChange }) => {
   }, []);
 
   const handleSelect = (option) => {
-    onChange({ target: { name: "category", value: option } });
+    onChange(option); // Pass the selected value directly
     setIsOpen(false);
   };
 

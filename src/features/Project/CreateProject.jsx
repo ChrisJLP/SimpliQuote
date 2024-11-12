@@ -246,7 +246,7 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
           {/* View Summary Button */}
           <div className="flex justify-center">
             <Button variant="secondary" className="px-6 py-3">
-              View project summary
+              View quote
             </Button>
           </div>
         </form>
