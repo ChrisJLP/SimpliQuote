@@ -1,19 +1,22 @@
 // hooks/useProjects.js
 import { useState, useEffect } from "react";
-import { getCurrentQuoteNumber } from "./useQuoteNumber";
-import { storage } from "../utils/storage";
 
-const STORAGE_KEY = "projects";
+const STORAGE_KEY = "simpliquote_projects";
 
 export const useProjects = () => {
-  const [projects, setProjects] = useState([]);
-  const [error, setError] = useState(null);
+  const [projects, setProjects] = useState([]); // Initialize with empty array
 
   useEffect(() => {
-    // Load saved projects on mount
-    const savedProjects = storage.load(STORAGE_KEY, []);
-    if (savedProjects) {
-      setProjects(savedProjects);
+    try {
+      const savedProjectsString = localStorage.getItem(STORAGE_KEY);
+      if (savedProjectsString) {
+        const savedProjects = JSON.parse(savedProjectsString);
+        // Ensure we're setting an array
+        setProjects(Array.isArray(savedProjects) ? savedProjects : []);
+      }
+    } catch (error) {
+      console.error("Error loading projects:", error);
+      setProjects([]); // Fallback to empty array on error
     }
   }, []);
 
@@ -22,70 +25,56 @@ export const useProjects = () => {
       const newProject = {
         ...projectData,
         id: Date.now(),
-        quoteNumber: getCurrentQuoteNumber(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      const updatedProjects = [...projects, newProject];
-      const success = storage.save(STORAGE_KEY, updatedProjects);
+      setProjects((prevProjects) => {
+        const updatedProjects = [...prevProjects, newProject];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProjects));
+        return updatedProjects;
+      });
 
-      if (!success) {
-        throw new Error("Failed to save project");
-      }
-
-      setProjects(updatedProjects);
-      setError(null);
       return newProject;
-    } catch (err) {
-      setError("Failed to save project. Please try again.");
-      console.error("Error saving project:", err);
+    } catch (error) {
+      console.error("Error saving project:", error);
       return null;
     }
   };
 
   const updateProject = (id, projectData) => {
     try {
-      const updatedProjects = projects.map((project) =>
-        project.id === id
-          ? {
-              ...project,
-              ...projectData,
-              quoteNumber: project.quoteNumber,
-              createdAt: project.createdAt,
-              updatedAt: new Date().toISOString(),
-            }
-          : project
-      );
-
-      const success = storage.save(STORAGE_KEY, updatedProjects);
-
-      if (!success) {
-        throw new Error("Failed to update project");
-      }
-
-      setProjects(updatedProjects);
-      setError(null);
-    } catch (err) {
-      setError("Failed to update project. Please try again.");
-      console.error("Error updating project:", err);
+      setProjects((prevProjects) => {
+        const updatedProjects = prevProjects.map((project) =>
+          project.id === id
+            ? {
+                ...project,
+                ...projectData,
+                quoteNumber: project.quoteNumber,
+                createdAt: project.createdAt,
+                updatedAt: new Date().toISOString(),
+              }
+            : project
+        );
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProjects));
+        return updatedProjects;
+      });
+    } catch (error) {
+      console.error("Error updating project:", error);
     }
   };
 
   const deleteProject = (id) => {
     try {
-      const updatedProjects = projects.filter((project) => project.id !== id);
-      const success = storage.save(STORAGE_KEY, updatedProjects);
-
-      if (!success) {
-        throw new Error("Failed to delete project");
-      }
-
-      setProjects(updatedProjects);
-      setError(null);
-    } catch (err) {
-      setError("Failed to delete project. Please try again.");
-      console.error("Error deleting project:", err);
+      setProjects((prevProjects) => {
+        const updatedProjects = prevProjects.filter(
+          (project) => project.id !== id
+        );
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProjects));
+        return updatedProjects;
+      });
+    } catch (error) {
+      console.error("Error deleting project:", error);
     }
   };
 
@@ -94,11 +83,10 @@ export const useProjects = () => {
   };
 
   return {
-    projects,
+    projects: projects || [], // Ensure we always return an array
     saveProject,
     updateProject,
     deleteProject,
     getProject,
-    error,
   };
 };

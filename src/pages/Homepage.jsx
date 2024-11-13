@@ -1,10 +1,11 @@
+// pages/Homepage.jsx
 import React, { useState } from "react";
 import CreateProjectForm from "../features/Project/CreateProject";
 import Modal from "../components/Modal";
 import ProjectCard from "../components/ProjectCard";
+import ProjectList from "../components/ProjectList";
 import WelcomeModal from "../components/WelcomeModal";
 import FloatingActionButton from "../components/FloatingActionButton";
-import ProjectList from "../components/ProjectList";
 import { useUserDetails } from "../hooks/useUserDetails";
 import { useProjects } from "../hooks/useProjects";
 
@@ -55,11 +56,6 @@ const Homepage = () => {
     setShowCreateModal(true);
   };
 
-  const handleCreateNew = () => {
-    setSelectedProject(null);
-    setShowCreateModal(true);
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-[#2b314b] p-4">
       {/* Header section with title and edit details */}
@@ -97,9 +93,12 @@ const Homepage = () => {
 
       <div className="flex flex-col items-center lg:items-stretch lg:flex-row lg:justify-center lg:space-x-8 w-full">
         <ProjectList
-          projects={projects}
+          projects={Array.isArray(projects) ? projects : []}
           onProjectClick={handleProjectClick}
-          onCreateNew={handleCreateNew}
+          onCreateNew={() => {
+            setSelectedProject(null);
+            setShowCreateModal(true);
+          }}
         />
 
         <ProjectCard
@@ -126,14 +125,20 @@ const Homepage = () => {
         isEditing={true}
       />
 
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          setSelectedProject(null);
+        }}
+      >
         <CreateProjectForm
           onCancel={() => {
             setShowCreateModal(false);
             setSelectedProject(null);
           }}
           onSubmit={handleProjectSubmit}
-          userDetails={userDetails || null}
+          userDetails={userDetails}
           initialData={selectedProject}
         />
       </Modal>

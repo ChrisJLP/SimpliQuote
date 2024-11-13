@@ -10,7 +10,6 @@ import CreateCostsForm from "../Costs/CreateCosts";
 import QuotePreview from "./QuotePreview";
 import QuoteNumber from "../../components/QuoteNumber";
 import { useProjectForm } from "../../hooks/useForm";
-import { clearCurrentQuoteNumber } from "../../hooks/useQuoteNumber";
 
 const CreateProjectForm = ({
   onSubmit,
@@ -24,33 +23,22 @@ const CreateProjectForm = ({
     showCostsModal,
     setShowCostsModal,
     handleInputChange,
-    handleAddTask: originalHandleAddTask,
-    handleEditTask,
-    handleRemoveTask,
-    handleUpdateTask,
+    handleAddTask,
     handleAddCosts,
     toggleTasks,
     confirmCancel,
     showWarningModal,
     handleWarningClose,
     handleWarningConfirm,
-  } = useProjectForm(initialData); // Pass initialData to useProjectForm
+    isExistingProject,
+    isDirty,
+  } = useProjectForm(initialData);
 
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTaskIndex, setEditingTaskIndex] = useState(null);
   const [showDeleteTaskModal, setShowDeleteTaskModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
-
-  const handleAddTask = (taskData) => {
-    if (editingTaskIndex !== null) {
-      handleUpdateTask(editingTaskIndex, taskData);
-      setEditingTaskIndex(null);
-    } else {
-      originalHandleAddTask(taskData);
-    }
-    setShowTaskModal(false);
-  };
 
   const handleEditClick = (index) => {
     const taskToEdit = formData.tasks[index];
@@ -73,9 +61,17 @@ const CreateProjectForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    clearCurrentQuoteNumber();
+    const quoteNumber = document
+      .querySelector('[data-testid="quote-number"]')
+      ?.textContent.split("#")[1]
+      .trim();
+    const projectDataWithQuote = {
+      ...formData,
+      quoteNumber,
+    };
+
     if (onSubmit) {
-      onSubmit(formData);
+      onSubmit(projectDataWithQuote);
     }
   };
 
@@ -86,10 +82,12 @@ const CreateProjectForm = ({
           <h2 className="text-2xl font-medium">
             {initialData ? "Edit Project" : "Create a Project"}
           </h2>
-          <QuoteNumber
-            shouldGenerate={!initialData}
-            existingNumber={initialData?.quoteNumber}
-          />
+          <div data-testid="quote-number">
+            <QuoteNumber
+              shouldGenerate={!initialData}
+              existingNumber={initialData?.quoteNumber}
+            />
+          </div>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -293,10 +291,10 @@ const CreateProjectForm = ({
               variant="outline"
               onClick={() => confirmCancel(onCancel)}
             >
-              Cancel
+              {initialData ? "Close" : "Cancel"}
             </Button>
             <Button type="submit" variant="primary">
-              Create Project
+              {initialData ? "Save Changes" : "Create Project"}
             </Button>
           </div>
         </form>
@@ -340,13 +338,17 @@ const CreateProjectForm = ({
 
       {/* Delete Task Warning Modal */}
       <WarningModal
-        isOpen={showDeleteTaskModal}
-        onClose={() => setShowDeleteTaskModal(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Task"
-        message="Are you sure you want to delete this task? This action cannot be undone."
-        confirmText="Delete Task"
-        cancelText="Cancel"
+        isOpen={showWarningModal}
+        onClose={handleWarningClose}
+        onConfirm={handleWarningConfirm}
+        title="Unsaved Changes"
+        message={
+          isExistingProject
+            ? "You have unsaved changes. Are you sure you want to close?"
+            : "You have unsaved changes. Are you sure you want to cancel?"
+        }
+        confirmText={isExistingProject ? "Yes, Close" : "Yes, Cancel"}
+        cancelText="No, Keep Editing"
       />
 
       {/* Quote Preview Modal */}
