@@ -1,3 +1,4 @@
+// features/Project/CreateProject.jsx
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Button from "../../components/Button";
@@ -11,7 +12,12 @@ import QuoteNumber from "../../components/QuoteNumber";
 import { useProjectForm } from "../../hooks/useForm";
 import { clearCurrentQuoteNumber } from "../../hooks/useQuoteNumber";
 
-const CreateProjectForm = ({ onSubmit, onCancel, userDetails = null }) => {
+const CreateProjectForm = ({
+  onSubmit,
+  onCancel,
+  userDetails = null,
+  initialData = null,
+}) => {
   const {
     formData,
     includeTasks,
@@ -28,7 +34,7 @@ const CreateProjectForm = ({ onSubmit, onCancel, userDetails = null }) => {
     showWarningModal,
     handleWarningClose,
     handleWarningConfirm,
-  } = useProjectForm();
+  } = useProjectForm(initialData); // Pass initialData to useProjectForm
 
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTaskIndex, setEditingTaskIndex] = useState(null);
@@ -77,8 +83,13 @@ const CreateProjectForm = ({ onSubmit, onCancel, userDetails = null }) => {
     <div className="flex flex-col h-full">
       <div className="overflow-y-auto p-6 pb-24">
         <div className="flex justify-between items-start mb-6">
-          <h2 className="text-2xl font-medium">Create a Project</h2>
-          <QuoteNumber shouldGenerate={true} />
+          <h2 className="text-2xl font-medium">
+            {initialData ? "Edit Project" : "Create a Project"}
+          </h2>
+          <QuoteNumber
+            shouldGenerate={!initialData}
+            existingNumber={initialData?.quoteNumber}
+          />
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -363,6 +374,18 @@ CreateProjectForm.propTypes = {
     name: PropTypes.string,
     email: PropTypes.string,
     phoneNumber: PropTypes.string,
+    terms: PropTypes.string,
+  }),
+  initialData: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    customerName: PropTypes.string,
+    hourlyRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    hoursEstimate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    tasks: PropTypes.array,
+    otherCosts: PropTypes.array,
+    totalCost: PropTypes.number,
+    quoteNumber: PropTypes.string,
   }),
 };
 

@@ -1,28 +1,33 @@
+// hooks/useQuoteNumber.js
 import { useState, useEffect } from "react";
 
 const QUOTE_NUMBER_KEY = "lastQuoteNumber";
 const CURRENT_QUOTE_KEY = "currentQuoteNumber";
 
-export const useQuoteNumber = (shouldGenerate = true) => {
+export const useQuoteNumber = (
+  shouldGenerate = true,
+  existingNumber = null
+) => {
   const [quoteNumber, setQuoteNumber] = useState(null);
 
   useEffect(() => {
-    // Check if we already have a number for this quote view
-    const currentNumber = sessionStorage.getItem(CURRENT_QUOTE_KEY);
+    // Clear any existing quote number in session storage when mounting
+    sessionStorage.removeItem(CURRENT_QUOTE_KEY);
 
-    if (currentNumber) {
-      // If we already have a number for this quote, use it
-      setQuoteNumber(currentNumber);
-    } else if (shouldGenerate) {
-      // Only generate a new number if shouldGenerate is true
+    // If we have an existing number, use it
+    if (existingNumber) {
+      setQuoteNumber(existingNumber);
+      return;
+    }
+
+    // Only generate a new number if shouldGenerate is true and we don't have an existing number
+    if (shouldGenerate && !existingNumber) {
       const lastNumber = localStorage.getItem(QUOTE_NUMBER_KEY) || "0";
       const nextNumber = (parseInt(lastNumber) + 1).toString();
-
       localStorage.setItem(QUOTE_NUMBER_KEY, nextNumber);
-      sessionStorage.setItem(CURRENT_QUOTE_KEY, nextNumber);
       setQuoteNumber(nextNumber);
     }
-  }, []); // Only run once when component mounts
+  }, [existingNumber, shouldGenerate]); // Dependencies for useEffect
 
   // Format the quote number with leading zeros (e.g., "001")
   const formattedQuoteNumber = quoteNumber ? quoteNumber.padStart(3, "0") : "";
@@ -30,10 +35,12 @@ export const useQuoteNumber = (shouldGenerate = true) => {
   return formattedQuoteNumber;
 };
 
+// This function is used when creating a new project
 export const getCurrentQuoteNumber = () => {
-  return sessionStorage.getItem(CURRENT_QUOTE_KEY);
+  return localStorage.getItem(QUOTE_NUMBER_KEY);
 };
 
+// We don't need this anymore since we're managing the clear in the hook
 export const clearCurrentQuoteNumber = () => {
   sessionStorage.removeItem(CURRENT_QUOTE_KEY);
 };

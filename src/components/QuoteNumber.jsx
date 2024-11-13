@@ -1,8 +1,13 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useQuoteNumber } from "../hooks/useQuoteNumber";
 
-const QuoteNumber = ({ shouldGenerate = false, className = "" }) => {
-  const quoteNumber = useQuoteNumber(shouldGenerate);
+const QuoteNumber = ({
+  shouldGenerate = false,
+  existingNumber = null,
+  className = "",
+}) => {
+  const quoteNumber = useQuoteNumber(shouldGenerate, existingNumber);
 
   if (!quoteNumber) return null;
 
@@ -11,6 +16,12 @@ const QuoteNumber = ({ shouldGenerate = false, className = "" }) => {
       Quote #: {quoteNumber}
     </div>
   );
+};
+
+QuoteNumber.propTypes = {
+  shouldGenerate: PropTypes.bool,
+  existingNumber: PropTypes.string,
+  className: PropTypes.string,
 };
 
 export default QuoteNumber;
