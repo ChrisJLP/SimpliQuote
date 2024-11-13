@@ -157,11 +157,12 @@ const QuotePreview = ({ projectData, userDetails }) => {
         {/* Terms & Conditions */}
         <div className="mt-8 text-sm text-gray-600">
           <h3 className="font-semibold mb-2">Terms & Conditions</h3>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>This quote is valid for 30 days from the date of issue</li>
-            <li>Payment terms: 50% deposit required to commence work</li>
-            <li>Final payment due upon project completion</li>
-          </ul>
+          <div className="whitespace-pre-line">
+            {userDetails?.terms ||
+              `This quote is valid for 30 days from the date of issue.
+Payment terms: 50% deposit required to commence work.
+Final payment due upon project completion.`}
+          </div>
         </div>
       </div>
     </div>

@@ -1,17 +1,26 @@
-// components/WelcomeModal.jsx
+// Inside WelcomeModal.jsx
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import Modal from "./Modal";
 import Button from "./Button";
 import FormInput from "./FormInput";
+import TermsModal from "./TermsModal";
 
-const WelcomeModal = ({ isOpen, onClose, onSubmit }) => {
+const WelcomeModal = ({ isOpen, onClose, onSubmit, initialData }) => {
+  // Ensure initialData is an object even if null/undefined is passed
+  const safeInitialData = initialData || {};
+
   const [formData, setFormData] = useState({
-    companyName: "",
-    name: "",
-    phoneNumber: "",
-    email: "",
+    companyName: safeInitialData.companyName || "",
+    name: safeInitialData.name || "",
+    phoneNumber: safeInitialData.phoneNumber || "",
+    email: safeInitialData.email || "",
+    terms:
+      safeInitialData.terms ||
+      `This quote is valid for 30 days from the date of issue.
+Payment terms: 50% deposit required to commence work.
+Final payment due upon project completion.`,
   });
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,79 +30,130 @@ const WelcomeModal = ({ isOpen, onClose, onSubmit }) => {
     }));
   };
 
+  const handleTermsUpdate = (newTerms) => {
+    setFormData((prev) => ({
+      ...prev,
+      terms: newTerms,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
     onClose();
   };
 
-  const handleSkip = () => {
-    onClose();
-  };
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="p-6">
-        <h2 className="text-2xl font-semibold mb-4">Welcome to SimpliQuote</h2>
-        <p className="text-gray-600 mb-6">
-          SimpliQuote helps you create professional project quotes quickly and
-          easily. Please provide your details below to get started, or skip this
-          step if you prefer.
-        </p>
+    <>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <div className="p-6">
+          <h2 className="text-2xl font-semibold mb-4">
+            Welcome to SimpliQuote
+          </h2>
+          <p className="text-gray-600 mb-6">
+            SimpliQuote helps you create professional project quotes quickly and
+            easily. Please provide your details below to get started, or skip
+            this step if you prefer.
+          </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FormInput
-            label="Company Name"
-            name="companyName"
-            value={formData.companyName}
-            onChange={handleInputChange}
-            placeholder="Optional"
-          />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <FormInput
+              label="Company Name"
+              name="companyName"
+              value={formData.companyName}
+              onChange={handleInputChange}
+              placeholder="Optional"
+            />
 
-          <FormInput
-            label="Your Name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-          />
+            <FormInput
+              label="Your Name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+            />
 
-          <FormInput
-            label="Phone Number"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleInputChange}
-            type="tel"
-            required
-          />
+            <FormInput
+              label="Phone Number"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              type="tel"
+              required
+            />
 
-          <FormInput
-            label="Email Address"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            type="email"
-            required
-          />
+            <FormInput
+              label="Email Address"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              type="email"
+              required
+            />
 
-          <div className="flex justify-end space-x-4 mt-6">
-            <Button variant="outline" onClick={handleSkip} type="button">
-              Skip for now
-            </Button>
-            <Button variant="primary" type="submit">
-              Save and Continue
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Modal>
+            {/* Mobile layout (default) */}
+            <div className="block lg:hidden flex flex-col items-center mt-6 space-y-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowTermsModal(true)}
+                type="button"
+                className="w-full text-gray-600 hover:text-gray-800"
+              >
+                Edit Terms & Conditions
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                className="w-full bg-[#4CAF50] hover:bg-[#45A049]"
+              >
+                Save and Continue
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onClose}
+                type="button"
+                className="w-full"
+              >
+                Skip for now
+              </Button>
+            </div>
+
+            {/* Desktop layout - remains unchanged */}
+            <div className="hidden lg:flex lg:justify-between lg:items-center lg:mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowTermsModal(true)}
+                type="button"
+                className="text-gray-600 hover:text-gray-800"
+              >
+                Edit Terms & Conditions
+              </Button>
+
+              <div className="flex space-x-4">
+                <Button variant="outline" onClick={onClose} type="button">
+                  Skip for now
+                </Button>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  className="bg-[#4CAF50] hover:bg-[#45A049]"
+                >
+                  Save and Continue
+                </Button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      <TermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        terms={formData.terms}
+        onSave={handleTermsUpdate}
+      />
+    </>
   );
-};
-
-WelcomeModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
 };
 
 export default WelcomeModal;
