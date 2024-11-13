@@ -6,6 +6,7 @@ import {
 
 const DEFAULT_PROJECT_STATE = {
   name: "",
+  customerName: "",
   hourlyRate: "",
   hoursEstimate: "",
   tasks: [],

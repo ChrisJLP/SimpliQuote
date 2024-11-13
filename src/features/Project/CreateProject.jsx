@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
@@ -6,9 +6,11 @@ import WarningModal from "../../components/WarningModal";
 import FormInput from "../../components/FormInput";
 import CreateTaskForm from "../Task/CreateTask";
 import CreateCostsForm from "../Costs/CreateCosts";
+import QuotePreview from "./QuotePreview";
 import { useProjectForm } from "../../hooks/useForm";
+import { clearCurrentQuoteNumber } from "../../hooks/useQuoteNumber";
 
-const CreateProjectForm = ({ onSubmit, onCancel }) => {
+const CreateProjectForm = ({ onSubmit, onCancel, userDetails = null }) => {
   const {
     formData,
     includeTasks,
@@ -27,10 +29,11 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
     handleWarningConfirm,
   } = useProjectForm();
 
-  const [showTaskModal, setShowTaskModal] = React.useState(false);
-  const [editingTaskIndex, setEditingTaskIndex] = React.useState(null);
-  const [showDeleteTaskModal, setShowDeleteTaskModal] = React.useState(false);
-  const [taskToDelete, setTaskToDelete] = React.useState(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [editingTaskIndex, setEditingTaskIndex] = useState(null);
+  const [showDeleteTaskModal, setShowDeleteTaskModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
 
   const handleAddTask = (taskData) => {
     if (editingTaskIndex !== null) {
@@ -63,7 +66,10 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    clearCurrentQuoteNumber();
+    if (onSubmit) {
+      onSubmit(formData);
+    }
   };
 
   return (
@@ -71,12 +77,21 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
       <div className="overflow-y-auto p-6 pb-24">
         <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Project Name Input */}
           <FormInput
             label="Project name"
             name="name"
             value={formData.name}
+            onChange={handleInputChange}
+            required
+          />
+
+          {/* Customer Name Input */}
+          <FormInput
+            label="Customer name"
+            name="customerName"
+            value={formData.customerName}
             onChange={handleInputChange}
             required
           />
@@ -238,6 +253,7 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
               )}
             </>
           )}
+
           {/* Total Cost */}
           <div className="text-center">
             Total cost: £{formData.totalCost.toFixed(2)}
@@ -245,21 +261,30 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
 
           {/* View Summary Button */}
           <div className="flex justify-center">
-            <Button variant="secondary" className="px-6 py-3">
+            <Button
+              variant="secondary"
+              onClick={() => setShowQuoteModal(true)}
+              type="button"
+              className="px-6 py-3"
+            >
               View quote
             </Button>
           </div>
-        </form>
-      </div>
 
-      {/* Sticky footer */}
-      <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
-        <Button variant="outline" onClick={() => confirmCancel(onCancel)}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={handleSubmit}>
-          Create Project
-        </Button>
+          {/* Sticky footer */}
+          <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => confirmCancel(onCancel)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              Create Project
+            </Button>
+          </div>
+        </form>
       </div>
 
       {/* Warning Modal */}
@@ -308,6 +333,20 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
         confirmText="Delete Task"
         cancelText="Cancel"
       />
+
+      {/* Quote Preview Modal */}
+      <Modal isOpen={showQuoteModal} onClose={() => setShowQuoteModal(false)}>
+        <QuotePreview projectData={formData} userDetails={userDetails} />
+        <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowQuoteModal(false)}
+            type="button"
+          >
+            Close
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };
@@ -315,6 +354,12 @@ const CreateProjectForm = ({ onSubmit, onCancel }) => {
 CreateProjectForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
+  userDetails: PropTypes.shape({
+    companyName: PropTypes.string,
+    name: PropTypes.string,
+    email: PropTypes.string,
+    phoneNumber: PropTypes.string,
+  }),
 };
 
 export default CreateProjectForm;

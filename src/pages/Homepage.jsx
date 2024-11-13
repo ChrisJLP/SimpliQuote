@@ -127,6 +127,7 @@ const Homepage = () => {
             console.log("Project data:", data);
             setShowCreateModal(false);
           }}
+          userDetails={userDetails || null}
         />
       </Modal>
     </div>
