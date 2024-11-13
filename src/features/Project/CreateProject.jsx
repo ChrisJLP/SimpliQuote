@@ -7,6 +7,7 @@ import FormInput from "../../components/FormInput";
 import CreateTaskForm from "../Task/CreateTask";
 import CreateCostsForm from "../Costs/CreateCosts";
 import QuotePreview from "./QuotePreview";
+import QuoteNumber from "../../components/QuoteNumber";
 import { useProjectForm } from "../../hooks/useForm";
 import { clearCurrentQuoteNumber } from "../../hooks/useQuoteNumber";
 
@@ -75,7 +76,10 @@ const CreateProjectForm = ({ onSubmit, onCancel, userDetails = null }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="overflow-y-auto p-6 pb-24">
-        <h2 className="text-2xl font-medium mb-6">Create a Project</h2>
+        <div className="flex justify-between items-start mb-6">
+          <h2 className="text-2xl font-medium">Create a Project</h2>
+          <QuoteNumber shouldGenerate={true} />
+        </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Project Name Input */}

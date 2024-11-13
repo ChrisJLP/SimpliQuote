@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 const QUOTE_NUMBER_KEY = "lastQuoteNumber";
 const CURRENT_QUOTE_KEY = "currentQuoteNumber";
 
-export const useQuoteNumber = () => {
+export const useQuoteNumber = (shouldGenerate = true) => {
   const [quoteNumber, setQuoteNumber] = useState(null);
 
   useEffect(() => {
@@ -13,12 +13,11 @@ export const useQuoteNumber = () => {
     if (currentNumber) {
       // If we already have a number for this quote, use it
       setQuoteNumber(currentNumber);
-    } else {
-      // Get the last quote number from localStorage
+    } else if (shouldGenerate) {
+      // Only generate a new number if shouldGenerate is true
       const lastNumber = localStorage.getItem(QUOTE_NUMBER_KEY) || "0";
       const nextNumber = (parseInt(lastNumber) + 1).toString();
 
-      // Save the new number as both the last number and current number
       localStorage.setItem(QUOTE_NUMBER_KEY, nextNumber);
       sessionStorage.setItem(CURRENT_QUOTE_KEY, nextNumber);
       setQuoteNumber(nextNumber);
@@ -31,8 +30,10 @@ export const useQuoteNumber = () => {
   return formattedQuoteNumber;
 };
 
-// Add a helper function to clear the current quote number
-// This should be called when creating a new project
+export const getCurrentQuoteNumber = () => {
+  return sessionStorage.getItem(CURRENT_QUOTE_KEY);
+};
+
 export const clearCurrentQuoteNumber = () => {
   sessionStorage.removeItem(CURRENT_QUOTE_KEY);
 };

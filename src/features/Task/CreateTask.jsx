@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import WarningModal from "../../components/WarningModal";
 import CreateCostsForm from "../Costs/CreateCosts";
+import QuoteNumber from "../../components/QuoteNumber";
 import { useTaskForm } from "../../hooks/useForm";
 
 const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
@@ -22,15 +23,14 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     handleRemoveSubtask,
   } = useTaskForm(initialData);
 
-  const [currentSubtask, setCurrentSubtask] = React.useState(null);
-  const [subtaskError, setSubtaskError] = React.useState("");
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [editingSubtaskIndex, setEditingSubtaskIndex] = React.useState(null);
-  const [showDeleteSubtaskModal, setShowDeleteSubtaskModal] =
-    React.useState(false);
-  const [subtaskToDelete, setSubtaskToDelete] = React.useState(null);
+  const [currentSubtask, setCurrentSubtask] = useState(null);
+  const [subtaskError, setSubtaskError] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingSubtaskIndex, setEditingSubtaskIndex] = useState(null);
+  const [showDeleteSubtaskModal, setShowDeleteSubtaskModal] = useState(false);
+  const [subtaskToDelete, setSubtaskToDelete] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData?.subtasks?.length > 0) {
       toggleSubtasks(true);
     }
@@ -136,9 +136,12 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="overflow-y-auto p-6 pb-24">
-        <h2 className="text-2xl font-medium mb-6">
-          {initialData ? "Edit Task" : "Create a Task"}
-        </h2>
+        <div className="flex justify-between items-start mb-6">
+          <h2 className="text-2xl font-medium">
+            {initialData ? "Edit Task" : "Create a Task"}
+          </h2>
+          <QuoteNumber />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Task Name Input */}
@@ -350,17 +353,17 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
               </div>
             </div>
           )}
-        </form>
-      </div>
 
-      {/* Sticky footer */}
-      <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={handleSubmit}>
-          {initialData ? "Update Task" : "Save Task"}
-        </Button>
+          {/* Sticky footer */}
+          <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
+            <Button variant="outline" onClick={onCancel} type="button">
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              {initialData ? "Update Task" : "Save Task"}
+            </Button>
+          </div>
+        </form>
       </div>
 
       {/* Costs Creation Modal */}

@@ -4,6 +4,7 @@ import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
 import WarningModal from "../../components/WarningModal";
 import CustomDropdown from "../../components/CustomDropdown";
+import QuoteNumber from "../../components/QuoteNumber";
 
 const COST_CATEGORIES = [
   "Materials",
@@ -127,7 +128,10 @@ const CreateCostsForm = ({ onSubmit, onCancel, existingCosts = [] }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="overflow-y-auto p-6 pb-24">
-        <h2 className="text-2xl font-medium mb-6">Other Costs</h2>
+        <div className="flex justify-between items-start mb-6">
+          <h2 className="text-2xl font-medium">Other Costs</h2>
+          <QuoteNumber />
+        </div>
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
