@@ -1,8 +1,9 @@
+// components/QuotePreview.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import { calculateTotalHours } from "../../utils/calculateCost";
 
-const QuotePreview = ({ projectData, userDetails }) => {
+const QuotePreview = ({ projectData, userDetails, id }) => {
   const currentDate = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
@@ -20,7 +21,10 @@ const QuotePreview = ({ projectData, userDetails }) => {
   };
 
   return (
-    <div className="bg-transparent w-full max-w-4xl mx-auto">
+    <div
+      id={id} // Added ID prop
+      className="bg-transparent w-full max-w-4xl mx-auto max-h-[70vh] overflow-y-auto"
+    >
       <div className="p-4 sm:p-8">
         {/* Header */}
         <div className="space-y-6 sm:space-y-0 sm:flex sm:justify-between mb-8">
@@ -238,6 +242,7 @@ QuotePreview.propTypes = {
     email: PropTypes.string,
     phoneNumber: PropTypes.string,
   }),
+  id: PropTypes.string, // New prop for ID
 };
 
 export default QuotePreview;

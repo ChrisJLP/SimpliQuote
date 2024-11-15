@@ -10,6 +10,7 @@ import CreateCostsForm from "../Costs/CreateCosts";
 import QuotePreview from "./QuotePreview";
 import QuoteNumber from "../../components/QuoteNumber";
 import { useProjectForm } from "../../hooks/useForm";
+import { generatePDF } from "../../utils/pdfGenerator"; // Import generatePDF
 
 const CreateProjectForm = ({
   onSubmit,
@@ -39,48 +40,6 @@ const CreateProjectForm = ({
   const [showDeleteTaskModal, setShowDeleteTaskModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
-
-  // Debugging logs for current state and initialData
-  console.log("=== CreateProjectForm Render Start ===");
-  console.log(
-    "CreateProjectForm mounted/re-rendered with initialData:",
-    initialData
-  );
-  console.log("Project Form states:", {
-    includeTasks,
-    showCostsModal,
-    isExistingProject,
-    isDirty,
-    formData,
-    showTaskModal,
-    editingTaskIndex,
-    showDeleteTaskModal,
-    taskToDelete,
-    showQuoteModal,
-  });
-
-  const handleEditClick = (index) => {
-    console.log(`Edit task at index ${index}`);
-    setEditingTaskIndex(index);
-    setShowTaskModal(true);
-  };
-
-  const handleRemoveClick = (index) => {
-    console.log(`Remove task at index ${index}`);
-    setTaskToDelete(index);
-    setShowDeleteTaskModal(true);
-  };
-
-  const handleConfirmDelete = () => {
-    console.log("Confirm delete task at index:", taskToDelete);
-    if (taskToDelete !== null) {
-      // TODO: Implement handleRemoveTask in useProjectForm or define it here
-      // handleRemoveTask(taskToDelete);
-      setTaskToDelete(null);
-      setShowDeleteTaskModal(false);
-      console.log("Task at index", taskToDelete, "deleted.");
-    }
-  };
 
   const handleUpdateTask = (updatedTask) => {
     console.log("handleUpdateTask called with:", updatedTask);
@@ -115,6 +74,36 @@ const CreateProjectForm = ({
     }
   };
 
+  const handleEditClick = (index) => {
+    console.log(`Edit task at index ${index}`);
+    setEditingTaskIndex(index);
+    setShowTaskModal(true);
+  };
+
+  const handleRemoveClick = (index) => {
+    console.log(`Remove task at index ${index}`);
+    setTaskToDelete(index);
+    setShowDeleteTaskModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    console.log("Confirm delete task at index:", taskToDelete);
+    if (taskToDelete !== null) {
+      const updatedTasks = formData.tasks.filter(
+        (task, index) => index !== taskToDelete
+      );
+      handleInputChange({
+        target: {
+          name: "tasks",
+          value: updatedTasks,
+        },
+      });
+      setTaskToDelete(null);
+      setShowDeleteTaskModal(false);
+      console.log("Task at index", taskToDelete, "deleted.");
+    }
+  };
+
   const handleProjectSubmit = () => {
     console.log("handleProjectSubmit called for CreateProjectForm");
     // The quoteNumber is now included in formData by QuoteNumber
@@ -132,8 +121,6 @@ const CreateProjectForm = ({
       console.log("No onSubmit prop provided for project form.");
     }
   };
-
-  console.log("=== CreateProjectForm Render End ===");
 
   return (
     <div className="flex flex-col h-full">
@@ -472,7 +459,11 @@ const CreateProjectForm = ({
           setShowQuoteModal(false);
         }}
       >
-        <QuotePreview projectData={formData} userDetails={userDetails} />
+        <QuotePreview
+          id="quote-preview" // Assigning ID for PDF generation
+          projectData={formData}
+          userDetails={userDetails}
+        />
         <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-end space-x-4">
           <Button
             variant="outline"
@@ -483,6 +474,19 @@ const CreateProjectForm = ({
             type="button"
           >
             Close
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              console.log("Downloading PDF...");
+              generatePDF(
+                "quote-preview",
+                `Quote_${formData.quoteNumber || "N/A"}.pdf`
+              );
+            }}
+            type="button"
+          >
+            Download PDF
           </Button>
         </div>
       </Modal>

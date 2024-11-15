@@ -1,3 +1,5 @@
+// homepage.jsx
+
 import React, { useState } from "react";
 import CreateProjectForm from "../features/Project/CreateProject";
 import Modal from "../components/Modal";
@@ -104,7 +106,7 @@ const Homepage = () => {
         </button>
       </div>
 
-      <div className="flex flex-col items-start lg:flex-row lg:justify-center lg:space-x-8 w-full">
+      <div className="flex flex-col items-center space-y-4 lg:flex-row lg:items-start lg:justify-center lg:space-x-8 lg:space-y-0 w-full">
         {/* Project List */}
         <ProjectList
           projects={Array.isArray(projects) ? projects : []}
