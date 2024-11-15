@@ -1,4 +1,3 @@
-// pages/Homepage.jsx
 import React, { useState } from "react";
 import CreateProjectForm from "../features/Project/CreateProject";
 import Modal from "../components/Modal";
@@ -44,17 +43,31 @@ const Homepage = () => {
   const handleProjectSubmit = (projectData) => {
     if (selectedProject) {
       updateProject(selectedProject.id, projectData);
-      setSelectedProject(null);
+      setSelectedProject({ ...selectedProject, ...projectData });
     } else {
-      saveProject(projectData);
+      // Save new project and set it as the "most recent" project
+      const newProject = saveProject(projectData);
+      setSelectedProject(newProject);
     }
     setShowCreateModal(false);
   };
 
   const handleProjectClick = (project) => {
+    // Update the selected project to show its quote on the right side
     setSelectedProject(project);
-    setShowCreateModal(true);
+    // Remove the line to automatically open edit form:
+    // setShowCreateModal(true);
   };
+
+  const handleEditProject = (project) => {
+    setSelectedProject(project);
+    setShowCreateModal(true); // Only open modal form when clicking "Edit Project"
+  };
+
+  // Determine which project to display on the right side in ProjectCard
+  const projectToShow =
+    selectedProject ||
+    (projects && projects.length > 0 ? projects[projects.length - 1] : null);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#2b314b] p-4">
@@ -91,7 +104,8 @@ const Homepage = () => {
         </button>
       </div>
 
-      <div className="flex flex-col items-center lg:items-stretch lg:flex-row lg:justify-center lg:space-x-8 w-full">
+      <div className="flex flex-col items-start lg:flex-row lg:justify-center lg:space-x-8 w-full">
+        {/* Project List */}
         <ProjectList
           projects={Array.isArray(projects) ? projects : []}
           onProjectClick={handleProjectClick}
@@ -101,9 +115,11 @@ const Homepage = () => {
           }}
         />
 
+        {/* Dynamic Project Card (Quote Display) */}
         <ProjectCard
-          title="Example Project"
-          description="This is a placeholder for an example project."
+          project={projectToShow}
+          userDetails={userDetails}
+          onEditProject={handleEditProject}
         />
       </div>
 

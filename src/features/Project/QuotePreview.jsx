@@ -1,4 +1,3 @@
-// components/QuotePreview.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import { calculateTotalHours } from "../../utils/calculateCost";
@@ -21,7 +20,7 @@ const QuotePreview = ({ projectData, userDetails }) => {
   };
 
   return (
-    <div className="bg-white w-full max-w-4xl mx-auto">
+    <div className="bg-transparent w-full max-w-4xl mx-auto">
       <div className="p-4 sm:p-8">
         {/* Header */}
         <div className="space-y-6 sm:space-y-0 sm:flex sm:justify-between mb-8">

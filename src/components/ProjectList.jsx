@@ -1,4 +1,3 @@
-// components/ProjectList.jsx
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Button from "./Button";
@@ -62,7 +61,7 @@ const ProjectList = ({ projects, onProjectClick, onCreateNew }) => {
 
   return (
     <div
-      className="mt-8 bg-[#EFEFEC] rounded-lg shadow-md p-6 w-[280px] flex flex-col"
+      className="bg-[#EFEFEC] rounded-lg shadow-md p-6 w-[280px] flex flex-col"
       style={{
         minHeight: `${minHeight}px`,
         height: `${Math.min(calculatedHeight, maxHeight)}px`,
