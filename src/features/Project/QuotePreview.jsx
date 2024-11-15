@@ -23,7 +23,7 @@ const QuotePreview = ({ projectData, userDetails }) => {
   return (
     <div className="bg-white w-full max-w-4xl mx-auto">
       <div className="p-4 sm:p-8">
-        {/* Header - Restructured for better mobile layout */}
+        {/* Header */}
         <div className="space-y-6 sm:space-y-0 sm:flex sm:justify-between mb-8">
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-800">Quote</h1>
@@ -98,6 +98,7 @@ const QuotePreview = ({ projectData, userDetails }) => {
                           )}
                         </td>
                       </tr>
+                      {/* Display subtasks */}
                       {task.subtasks?.map((subtask, idx) => (
                         <tr
                           key={`${index}-${idx}`}
@@ -114,6 +115,28 @@ const QuotePreview = ({ projectData, userDetails }) => {
                           </td>
                         </tr>
                       ))}
+                      {/* Display task otherCosts */}
+                      {task.otherCosts?.length > 0 && (
+                        <tr className="bg-gray-50 text-sm">
+                          <td className="px-4 py-2 pl-8 italic font-medium">
+                            Other Costs for "{task.name}":
+                          </td>
+                          <td />
+                          <td />
+                        </tr>
+                      )}
+                      {task.otherCosts?.map((cost, cIdx) => (
+                        <tr
+                          key={`task-cost-${index}-${cIdx}`}
+                          className="bg-gray-50 text-sm"
+                        >
+                          <td className="px-4 py-2 pl-12">· {cost.name}</td>
+                          <td className="px-4 py-2 text-right">-</td>
+                          <td className="px-4 py-2 text-right">
+                            {formatCurrency(cost.amount)}
+                          </td>
+                        </tr>
+                      ))}
                     </React.Fragment>
                   ))}
                 </tbody>
@@ -121,7 +144,7 @@ const QuotePreview = ({ projectData, userDetails }) => {
             </div>
           )}
 
-          {/* Additional Costs Section */}
+          {/* Additional Costs Section (Project-level) */}
           {projectData.otherCosts && projectData.otherCosts.length > 0 && (
             <div className="mb-6 overflow-x-auto">
               <h3 className="text-md font-semibold mb-2">Additional Costs</h3>
@@ -191,6 +214,12 @@ QuotePreview.propTypes = {
               PropTypes.string,
               PropTypes.number,
             ]).isRequired,
+          })
+        ),
+        otherCosts: PropTypes.arrayOf(
+          PropTypes.shape({
+            name: PropTypes.string.isRequired,
+            amount: PropTypes.number.isRequired,
           })
         ),
       })
