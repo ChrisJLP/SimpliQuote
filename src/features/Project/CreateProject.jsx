@@ -76,8 +76,9 @@ const CreateProjectForm = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="overflow-y-auto p-6 pb-24">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      {/* Scrollable content area */}
+      <div className="overflow-y-auto p-6">
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-2xl font-medium">
             {initialData ? "Edit Project" : "Create a Project"}
@@ -90,7 +91,8 @@ const CreateProjectForm = ({
           </div>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        {/* Main form fields */}
+        <div className="space-y-6">
           {/* Project Name Input */}
           <FormInput
             label="Project name"
@@ -151,6 +153,7 @@ const CreateProjectForm = ({
             </label>
           </div>
 
+          {/* Task Controls and Display (when tasks are included) */}
           {includeTasks && (
             <>
               <div className="flex justify-center space-x-4">
@@ -268,12 +271,12 @@ const CreateProjectForm = ({
           )}
 
           {/* Total Cost */}
-          <div className="text-center">
+          <div className="text-center mt-6">
             Total cost: £{formData.totalCost.toFixed(2)}
           </div>
 
           {/* View Summary Button */}
-          <div className="flex justify-center">
+          <div className="flex justify-center mt-6">
             <Button
               variant="secondary"
               onClick={() => setShowQuoteModal(true)}
@@ -283,21 +286,21 @@ const CreateProjectForm = ({
               View quote
             </Button>
           </div>
+        </div>
+      </div>
 
-          {/* Sticky footer */}
-          <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => confirmCancel(onCancel)}
-            >
-              {initialData ? "Close" : "Cancel"}
-            </Button>
-            <Button type="submit" variant="primary">
-              {initialData ? "Save Changes" : "Create Project"}
-            </Button>
-          </div>
-        </form>
+      {/* Footer (Fixed with sticky) */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-end space-x-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => confirmCancel(onCancel)}
+        >
+          {initialData ? "Close" : "Cancel"}
+        </Button>
+        <Button type="submit" variant="primary">
+          {initialData ? "Save Changes" : "Create Project"}
+        </Button>
       </div>
 
       {/* Warning Modal */}
@@ -338,23 +341,19 @@ const CreateProjectForm = ({
 
       {/* Delete Task Warning Modal */}
       <WarningModal
-        isOpen={showWarningModal}
-        onClose={handleWarningClose}
-        onConfirm={handleWarningConfirm}
-        title="Unsaved Changes"
-        message={
-          isExistingProject
-            ? "You have unsaved changes. Are you sure you want to close?"
-            : "You have unsaved changes. Are you sure you want to cancel?"
-        }
-        confirmText={isExistingProject ? "Yes, Close" : "Yes, Cancel"}
-        cancelText="No, Keep Editing"
+        isOpen={showDeleteTaskModal}
+        onClose={() => setShowDeleteTaskModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        confirmText="Delete Task"
+        cancelText="Cancel"
       />
 
       {/* Quote Preview Modal */}
       <Modal isOpen={showQuoteModal} onClose={() => setShowQuoteModal(false)}>
         <QuotePreview projectData={formData} userDetails={userDetails} />
-        <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
+        <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-end space-x-4">
           <Button
             variant="outline"
             onClick={() => setShowQuoteModal(false)}
@@ -364,7 +363,7 @@ const CreateProjectForm = ({
           </Button>
         </div>
       </Modal>
-    </div>
+    </form>
   );
 };
 
