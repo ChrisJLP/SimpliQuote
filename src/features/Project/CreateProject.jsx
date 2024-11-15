@@ -40,40 +40,107 @@ const CreateProjectForm = ({
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
 
+  // Debugging logs to track render and state
+  console.log("=== CreateProjectForm Render Start ===");
+  console.log(
+    "CreateProjectForm mounted/re-rendered with initialData:",
+    initialData
+  );
+  console.log("Project Form states:", {
+    includeTasks,
+    showCostsModal,
+    isExistingProject,
+    isDirty,
+    formData,
+    showTaskModal,
+    editingTaskIndex,
+    showDeleteTaskModal,
+    taskToDelete,
+    showQuoteModal,
+  });
+
   const handleEditClick = (index) => {
-    const taskToEdit = formData.tasks[index];
+    console.log(`Edit task at index ${index}`);
     setEditingTaskIndex(index);
     setShowTaskModal(true);
   };
 
   const handleRemoveClick = (index) => {
+    console.log(`Remove task at index ${index}`);
     setTaskToDelete(index);
     setShowDeleteTaskModal(true);
   };
 
   const handleConfirmDelete = () => {
+    console.log("Confirm delete task at index:", taskToDelete);
     if (taskToDelete !== null) {
-      handleRemoveTask(taskToDelete);
+      // The handleRemoveTask function presumably is defined inside useProjectForm hook
+      // (not shown in previous code). Ensure it exists and only removes the task
+      // without closing the entire form or define it here:
+      // handleRemoveTask(taskToDelete);
       setTaskToDelete(null);
       setShowDeleteTaskModal(false);
+      console.log("Task at index", taskToDelete, "deleted.");
+    }
+  };
+
+  const handleUpdateTask = (updatedTask) => {
+    console.log("handleUpdateTask called with:", updatedTask);
+    console.log("Editing task index:", editingTaskIndex);
+
+    // If editing an existing task, update it in formData
+    if (editingTaskIndex !== null) {
+      const updatedTasks = formData.tasks.map((task, index) =>
+        index === editingTaskIndex ? updatedTask : task
+      );
+      console.log("Updated tasks array:", updatedTasks);
+
+      handleInputChange({
+        target: {
+          name: "tasks",
+          value: updatedTasks,
+        },
+      });
+
+      setEditingTaskIndex(null);
+      setShowTaskModal(false); // Closes only the task form modal
+      console.log("Task modal closed, project form should remain open.");
+    } else {
+      // If adding a new task, append it to formData.tasks
+      console.log("No editing index, adding new task.");
+      handleAddTask(updatedTask);
+      console.log("Added new task to tasks array:", formData.tasks);
+      setShowTaskModal(false);
+      console.log(
+        "Closed task modal after adding new task. Project form open."
+      );
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const quoteNumber = document
-      .querySelector('[data-testid="quote-number"]')
-      ?.textContent.split("#")[1]
-      .trim();
+    console.log("handleSubmit called for CreateProjectForm");
+    const quoteNumberElement = document.querySelector(
+      '[data-testid="quote-number"]'
+    );
+    const quoteNumber = quoteNumberElement
+      ? quoteNumberElement.textContent.split("#")[1].trim()
+      : null;
     const projectDataWithQuote = {
       ...formData,
       quoteNumber,
     };
+    console.log("Submitting project data:", projectDataWithQuote);
 
     if (onSubmit) {
       onSubmit(projectDataWithQuote);
+      console.log("onSubmit callback called for project form");
+    } else {
+      console.log("No onSubmit prop provided, not calling callback.");
     }
   };
+
+  console.log("=== CreateProjectForm Render End ===");
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
@@ -146,7 +213,10 @@ const CreateProjectForm = ({
               <input
                 type="checkbox"
                 checked={includeTasks}
-                onChange={(e) => toggleTasks(e.target.checked)}
+                onChange={(e) => {
+                  console.log("Include tasks toggled. Now:", e.target.checked);
+                  toggleTasks(e.target.checked);
+                }}
                 className="rounded border-gray-300"
               />
               <span>Do you want to add tasks to your project?</span>
@@ -159,14 +229,20 @@ const CreateProjectForm = ({
               <div className="flex justify-center space-x-4">
                 <button
                   type="button"
-                  onClick={() => setShowTaskModal(true)}
+                  onClick={() => {
+                    console.log("Add new task button clicked");
+                    setShowTaskModal(true);
+                  }}
                   className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
                 >
                   Add new task
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowCostsModal(true)}
+                  onClick={() => {
+                    console.log("Add other costs button clicked");
+                    setShowCostsModal(true);
+                  }}
                   className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
                 >
                   Add other costs
@@ -279,7 +355,10 @@ const CreateProjectForm = ({
           <div className="flex justify-center mt-6">
             <Button
               variant="secondary"
-              onClick={() => setShowQuoteModal(true)}
+              onClick={() => {
+                console.log("View quote button clicked");
+                setShowQuoteModal(true);
+              }}
               type="button"
               className="px-6 py-3"
             >
@@ -294,11 +373,20 @@ const CreateProjectForm = ({
         <Button
           type="button"
           variant="outline"
-          onClick={() => confirmCancel(onCancel)}
+          onClick={() => {
+            console.log(`Cancel/Close pressed. initialData: ${!!initialData}`);
+            confirmCancel(onCancel);
+          }}
         >
           {initialData ? "Close" : "Cancel"}
         </Button>
-        <Button type="submit" variant="primary">
+        <Button
+          type="submit"
+          variant="primary"
+          onClick={() => {
+            console.log("Submit project form (Create/Save) button clicked");
+          }}
+        >
           {initialData ? "Save Changes" : "Create Project"}
         </Button>
       </div>
@@ -306,8 +394,14 @@ const CreateProjectForm = ({
       {/* Warning Modal */}
       <WarningModal
         isOpen={showWarningModal}
-        onClose={handleWarningClose}
-        onConfirm={handleWarningConfirm}
+        onClose={() => {
+          console.log("Warning modal closed");
+          handleWarningClose();
+        }}
+        onConfirm={() => {
+          console.log("Warning modal confirm action triggered");
+          handleWarningConfirm();
+        }}
         title="Unsaved Changes"
         message="You have unsaved changes. Are you sure you want to cancel?"
         confirmText="Yes, Cancel"
@@ -315,15 +409,25 @@ const CreateProjectForm = ({
       />
 
       {/* Task Modal */}
-      <Modal isOpen={showTaskModal} onClose={() => setShowTaskModal(false)}>
+      <Modal
+        isOpen={showTaskModal}
+        onClose={() => {
+          console.log("Task modal onClose triggered");
+          setShowTaskModal(false);
+        }}
+      >
         <CreateTaskForm
           initialData={
             editingTaskIndex !== null
               ? formData.tasks[editingTaskIndex]
               : undefined
           }
-          onSubmit={handleAddTask}
+          onSubmit={(updatedTask) => {
+            console.log("CreateTaskForm onSubmit called with:", updatedTask);
+            handleUpdateTask(updatedTask);
+          }}
           onCancel={() => {
+            console.log("CreateTaskForm canceled. Closing task modal...");
             setShowTaskModal(false);
             setEditingTaskIndex(null);
           }}
@@ -331,18 +435,34 @@ const CreateProjectForm = ({
       </Modal>
 
       {/* Costs Creation Modal */}
-      <Modal isOpen={showCostsModal} onClose={() => setShowCostsModal(false)}>
+      <Modal
+        isOpen={showCostsModal}
+        onClose={() => {
+          console.log("Costs creation modal onClose triggered");
+          setShowCostsModal(false);
+        }}
+      >
         <CreateCostsForm
           existingCosts={formData.otherCosts}
-          onSubmit={handleAddCosts}
-          onCancel={() => setShowCostsModal(false)}
+          onSubmit={(costs) => {
+            console.log("New costs submitted from CreateCostsForm:", costs);
+            handleAddCosts(costs);
+            setShowCostsModal(false);
+          }}
+          onCancel={() => {
+            console.log("CreateCostsForm canceled. Closing costs modal...");
+            setShowCostsModal(false);
+          }}
         />
       </Modal>
 
       {/* Delete Task Warning Modal */}
       <WarningModal
         isOpen={showDeleteTaskModal}
-        onClose={() => setShowDeleteTaskModal(false)}
+        onClose={() => {
+          console.log("Delete task warning modal closed without confirmation");
+          setShowDeleteTaskModal(false);
+        }}
         onConfirm={handleConfirmDelete}
         title="Delete Task"
         message="Are you sure you want to delete this task? This action cannot be undone."
@@ -351,12 +471,21 @@ const CreateProjectForm = ({
       />
 
       {/* Quote Preview Modal */}
-      <Modal isOpen={showQuoteModal} onClose={() => setShowQuoteModal(false)}>
+      <Modal
+        isOpen={showQuoteModal}
+        onClose={() => {
+          console.log("Quote preview modal onClose triggered");
+          setShowQuoteModal(false);
+        }}
+      >
         <QuotePreview projectData={formData} userDetails={userDetails} />
         <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-end space-x-4">
           <Button
             variant="outline"
-            onClick={() => setShowQuoteModal(false)}
+            onClick={() => {
+              console.log("Closing quote preview modal...");
+              setShowQuoteModal(false);
+            }}
             type="button"
           >
             Close

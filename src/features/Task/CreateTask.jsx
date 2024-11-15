@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// features/Task/CreateTask.jsx
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
@@ -18,38 +19,76 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     toggleSubtasks,
     confirmedSubtasks,
     updateSubtasks,
+    handleAddSubtask,
     handleEditSubtask,
     handleConfirmSubtask,
     handleRemoveSubtask,
+    currentSubtask,
+    setCurrentSubtask,
+    subtaskError,
+    setSubtaskError,
+    isEditing,
+    setIsEditing,
+    editingSubtaskIndex,
+    setEditingSubtaskIndex,
+    showDeleteSubtaskModal,
+    setShowDeleteSubtaskModal,
+    subtaskToDelete,
+    setSubtaskToDelete,
   } = useTaskForm(initialData);
 
-  const [currentSubtask, setCurrentSubtask] = useState(null);
-  const [subtaskError, setSubtaskError] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingSubtaskIndex, setEditingSubtaskIndex] = useState(null);
-  const [showDeleteSubtaskModal, setShowDeleteSubtaskModal] = useState(false);
-  const [subtaskToDelete, setSubtaskToDelete] = useState(null);
+  // Debugging logs to track render and state
+  console.log("=== CreateTaskForm Render Start ===");
+  console.log(
+    "CreateTaskForm mounted/re-rendered with initialData:",
+    initialData
+  );
+  console.log("Task Form states:", {
+    hasSubtasks,
+    showCostsModal,
+    currentSubtask,
+    editingSubtaskIndex,
+    showDeleteSubtaskModal,
+    subtaskToDelete,
+    subtaskError,
+    isEditing,
+    formData,
+    confirmedSubtasks,
+  });
 
   useEffect(() => {
-    if (initialData?.subtasks?.length > 0) {
+    // Only toggle subtasks if initialData has subtasks and hasSubtasks is false
+    if (initialData?.subtasks?.length > 0 && !hasSubtasks) {
+      console.log(
+        "Initial data includes subtasks, toggling hasSubtasks to true."
+      );
       toggleSubtasks(true);
     }
-  }, []);
+  }, [initialData, hasSubtasks, toggleSubtasks]);
 
-  const handleAddSubtask = () => {
-    setCurrentSubtask({ name: "", hoursEstimate: "" });
-    setSubtaskError("");
-    setIsEditing(false);
-    setEditingSubtaskIndex(null);
+  const handleConfirmDeleteSubtask = () => {
+    console.log(
+      "handleConfirmDeleteSubtask triggered for subtask index:",
+      subtaskToDelete
+    );
+    if (subtaskToDelete !== null) {
+      handleRemoveSubtask(subtaskToDelete);
+      setSubtaskToDelete(null);
+      setShowDeleteSubtaskModal(false);
+      console.log("Subtask at index", subtaskToDelete, "deleted.");
+    }
   };
 
   const validateSubtask = (subtask) => {
+    console.log("validateSubtask called with:", subtask);
     if (!subtask.name.trim()) {
       setSubtaskError("Subtask name is required");
+      console.log("Subtask validation failed: Missing name");
       return false;
     }
     if (!subtask.hoursEstimate || parseFloat(subtask.hoursEstimate) <= 0) {
       setSubtaskError("Valid hours estimate is required");
+      console.log("Subtask validation failed: Invalid hoursEstimate");
       return false;
     }
     setSubtaskError("");
@@ -57,10 +96,13 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
   };
 
   const handleConfirmSubtaskClick = () => {
+    console.log("handleConfirmSubtaskClick triggered");
     if (currentSubtask && validateSubtask(currentSubtask)) {
       if (isEditing && editingSubtaskIndex !== null) {
+        console.log("Updating existing subtask at index:", editingSubtaskIndex);
         handleUpdateSubtask(editingSubtaskIndex, currentSubtask);
       } else {
+        console.log("Confirming new subtask:", currentSubtask);
         handleConfirmSubtask(currentSubtask);
       }
       setCurrentSubtask(null);
@@ -70,15 +112,11 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     }
   };
 
-  const handleEditSubtaskClick = (index) => {
-    const subtaskToEdit = handleEditSubtask(index);
-    setCurrentSubtask(subtaskToEdit);
-    setSubtaskError("");
-    setIsEditing(true);
-    setEditingSubtaskIndex(index);
-  };
-
   const handleUpdateSubtask = (index, updatedSubtask) => {
+    console.log(
+      `handleUpdateSubtask called for index ${index} with:`,
+      updatedSubtask
+    );
     const updatedSubtasks = confirmedSubtasks.map((subtask, i) =>
       i === index
         ? {
@@ -87,40 +125,36 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
           }
         : subtask
     );
+    console.log("Updated subtasks array:", updatedSubtasks);
     updateSubtasks(updatedSubtasks);
   };
 
   const handleCancelSubtask = () => {
+    console.log("handleCancelSubtask triggered, subtask editing cancelled");
     setCurrentSubtask(null);
     setSubtaskError("");
     setIsEditing(false);
     setEditingSubtaskIndex(null);
   };
 
-  const handleConfirmSubtaskDelete = () => {
-    if (subtaskToDelete !== null) {
-      handleRemoveSubtask(subtaskToDelete);
-      setSubtaskToDelete(null);
-      setShowDeleteSubtaskModal(false);
-    }
-  };
-
   const calculateTotalHours = () => {
+    console.log("calculateTotalHours called with subtasks:", confirmedSubtasks);
     return confirmedSubtasks.reduce(
       (sum, subtask) => sum + (parseFloat(subtask.hoursEstimate) || 0),
       0
     );
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleTaskSubmit = () => {
+    console.log("handleTaskSubmit called for CreateTaskForm");
     if (currentSubtask?.name || currentSubtask?.hoursEstimate) {
+      console.log("There is an unconfirmed subtask. Prompting user...");
       if (
         !window.confirm(
           "You have an unconfirmed subtask. Do you want to continue without it?"
         )
       ) {
-        return;
+        return; // Stop if user doesn't want to proceed
       }
     }
     const taskData = {
@@ -130,12 +164,25 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
         ? calculateTotalHours()
         : parseFloat(formData.hoursEstimate) || 0,
     };
-    onSubmit(taskData);
+    console.log("Task form action data:", taskData);
+    if (onSubmit) {
+      console.log(
+        "Calling onSubmit callback for task form with data:",
+        taskData
+      );
+      onSubmit(taskData);
+      // We assume onSubmit updates the parent form data and closes this modal
+    } else {
+      console.log("No onSubmit prop provided for task form.");
+    }
   };
+
+  console.log("=== CreateTaskForm Render End ===");
 
   return (
     <div className="flex flex-col h-full">
-      <div className="overflow-y-auto p-6 pb-24">
+      {/* Scrollable content area */}
+      <div className="overflow-y-auto p-6 flex-1">
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-2xl font-medium">
             {initialData ? "Edit Task" : "Create a Task"}
@@ -143,15 +190,21 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
           <QuoteNumber />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Main form fields */}
+        <div className="space-y-6">
           {/* Task Name Input */}
           <div className="space-y-2">
-            <label className="block text-sm">Task name *</label>
+            <label className="block text-sm">
+              Task name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="name"
-              value={formData.name}
-              onChange={handleInputChange}
+              value={formData.name || ""}
+              onChange={(e) => {
+                console.log("Task name changed to:", e.target.value);
+                handleInputChange(e);
+              }}
               required
               placeholder="Enter task name"
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -161,12 +214,17 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
           {/* Single Hours Estimate - Only shown when no subtasks */}
           {!hasSubtasks && (
             <div className="space-y-2">
-              <label className="block text-sm">Hours estimate *</label>
+              <label className="block text-sm">
+                Hours estimate <span className="text-red-500">*</span>
+              </label>
               <input
                 type="number"
                 name="hoursEstimate"
-                value={formData.hoursEstimate}
-                onChange={handleInputChange}
+                value={formData.hoursEstimate || ""}
+                onChange={(e) => {
+                  console.log("Hours estimate changed to:", e.target.value);
+                  handleInputChange(e);
+                }}
                 required
                 min="0"
                 step="0.5"
@@ -182,7 +240,10 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
               <input
                 type="checkbox"
                 checked={hasSubtasks}
-                onChange={(e) => toggleSubtasks(e.target.checked)}
+                onChange={(e) => {
+                  console.log("Subtasks toggled. now:", e.target.checked);
+                  toggleSubtasks(e.target.checked);
+                }}
                 className="rounded border-gray-300"
               />
               <span>Do you want to add subtasks?</span>
@@ -222,7 +283,14 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                       <div className="flex space-x-2">
                         <button
                           type="button"
-                          onClick={() => handleEditSubtaskClick(index)}
+                          onClick={() => {
+                            console.log(`Edit subtask at index: ${index}`);
+                            const subtaskToEdit = handleEditSubtask(index);
+                            setCurrentSubtask(subtaskToEdit);
+                            setSubtaskError("");
+                            setIsEditing(true);
+                            setEditingSubtaskIndex(index);
+                          }}
                           className="text-slate-600 hover:text-slate-800"
                         >
                           Edit
@@ -230,6 +298,7 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                         <button
                           type="button"
                           onClick={() => {
+                            console.log(`Remove subtask at index: ${index}`);
                             setSubtaskToDelete(index);
                             setShowDeleteSubtaskModal(true);
                           }}
@@ -247,35 +316,47 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
               {currentSubtask && (
                 <div className="bg-gray-50 p-4 rounded-md space-y-3">
                   <div>
-                    <label className="block text-sm mb-1">Subtask name</label>
+                    <label className="block text-sm mb-1">
+                      Subtask name <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
-                      value={currentSubtask.name}
-                      onChange={(e) =>
-                        setCurrentSubtask({
-                          ...currentSubtask,
-                          name: e.target.value,
-                        })
-                      }
+                      value={currentSubtask.name || ""}
+                      onChange={(e) => {
+                        const updatedValue = e.target.value;
+                        console.log("Subtask name changed to:", updatedValue);
+                        setCurrentSubtask((prevSubtask) => ({
+                          ...prevSubtask,
+                          name: updatedValue,
+                        }));
+                      }}
                       placeholder="Enter subtask name"
                       className={`w-full p-3 border ${
                         subtaskError && !currentSubtask.name
                           ? "border-red-500"
                           : "border-gray-300"
                       } rounded-md`}
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">Hours estimate</label>
+                    <label className="block text-sm mb-1">
+                      Hours estimate <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="number"
-                      value={currentSubtask.hoursEstimate}
-                      onChange={(e) =>
-                        setCurrentSubtask({
-                          ...currentSubtask,
-                          hoursEstimate: e.target.value,
-                        })
-                      }
+                      value={currentSubtask.hoursEstimate || ""}
+                      onChange={(e) => {
+                        const updatedHours = e.target.value;
+                        console.log(
+                          "Subtask hours estimate changed to:",
+                          updatedHours
+                        );
+                        setCurrentSubtask((prevSubtask) => ({
+                          ...prevSubtask,
+                          hoursEstimate: updatedHours,
+                        }));
+                      }}
                       min="0"
                       step="0.5"
                       placeholder="0.0"
@@ -284,6 +365,7 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                           ? "border-red-500"
                           : "border-gray-300"
                       } rounded-md`}
+                      required
                     />
                   </div>
                   {subtaskError && (
@@ -292,14 +374,20 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                   <div className="flex justify-end space-x-2 pt-2">
                     <button
                       type="button"
-                      onClick={handleCancelSubtask}
+                      onClick={() => {
+                        console.log("Cancel subtask editing/creation");
+                        handleCancelSubtask();
+                      }}
                       className="text-gray-600 hover:text-gray-800"
                     >
                       Cancel
                     </button>
                     <Button
                       variant="secondary"
-                      onClick={handleConfirmSubtaskClick}
+                      onClick={() => {
+                        console.log("Confirm subtask clicked");
+                        handleConfirmSubtaskClick();
+                      }}
                     >
                       {isEditing ? "Update Subtask" : "Confirm Subtask"}
                     </Button>
@@ -308,26 +396,34 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
               )}
 
               {/* Action Buttons */}
-              <div className="flex justify-center space-x-4">
-                {!currentSubtask && (
+              {!currentSubtask && (
+                <div className="flex justify-center space-x-4">
                   <button
                     type="button"
-                    onClick={handleAddSubtask}
+                    onClick={() => {
+                      console.log("Add new subtask button clicked");
+                      handleAddSubtask();
+                    }}
                     className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
                   >
                     {confirmedSubtasks.length > 0
                       ? "Add another subtask"
                       : "Add new subtask"}
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setShowCostsModal(true)}
-                  className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
-                >
-                  Add other costs
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log(
+                        "Add other costs button clicked in task form"
+                      );
+                      setShowCostsModal(true);
+                    }}
+                    className="w-[220px] bg-slate-600 text-white p-3 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    Add other costs
+                  </button>
+                </div>
+              )}
 
               {confirmedSubtasks.length > 0 && (
                 <div className="text-sm text-gray-600">
@@ -353,33 +449,72 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
               </div>
             </div>
           )}
+        </div>
+      </div>
 
-          {/* Sticky footer */}
-          <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mt-auto flex justify-end space-x-4">
-            <Button variant="outline" onClick={onCancel} type="button">
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit">
-              {initialData ? "Update Task" : "Save Task"}
-            </Button>
-          </div>
-        </form>
+      {/* Footer (Fixed and sticky at the bottom) */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 flex justify-end space-x-4">
+        <Button
+          variant="outline"
+          onClick={() => {
+            console.log("Task form cancel button clicked");
+            onCancel();
+          }}
+          type="button"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => {
+            console.log("Task form (Save/Update) button clicked");
+            handleTaskSubmit();
+          }}
+        >
+          {initialData ? "Update Task" : "Save Task"}
+        </Button>
       </div>
 
       {/* Costs Creation Modal */}
-      <Modal isOpen={showCostsModal} onClose={() => setShowCostsModal(false)}>
+      <Modal
+        isOpen={showCostsModal}
+        onClose={() => {
+          console.log("Costs creation modal closed in task form");
+          setShowCostsModal(false);
+        }}
+      >
         <CreateCostsForm
           existingCosts={formData.otherCosts}
-          onSubmit={handleAddCosts}
-          onCancel={() => setShowCostsModal(false)}
+          onSubmit={(costs) => {
+            console.log(
+              "New costs submitted for task form from CreateCostsForm:",
+              costs
+            );
+            handleAddCosts(costs);
+            setShowCostsModal(false);
+          }}
+          onCancel={() => {
+            console.log(
+              "CreateCostsForm canceled in task form. Closing costs modal..."
+            );
+            setShowCostsModal(false);
+          }}
         />
       </Modal>
 
       {/* Delete Subtask Warning Modal */}
       <WarningModal
         isOpen={showDeleteSubtaskModal}
-        onClose={() => setShowDeleteSubtaskModal(false)}
-        onConfirm={handleConfirmSubtaskDelete}
+        onClose={() => {
+          console.log(
+            "Delete subtask warning modal closed without confirmation"
+          );
+          setShowDeleteSubtaskModal(false);
+        }}
+        onConfirm={() => {
+          console.log("Delete subtask warning modal confirm clicked");
+          handleConfirmDeleteSubtask();
+        }}
         title="Delete Subtask"
         message="Are you sure you want to delete this subtask? This action cannot be undone."
         confirmText="Delete Subtask"
