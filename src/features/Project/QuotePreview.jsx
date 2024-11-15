@@ -1,7 +1,7 @@
+// components/QuotePreview.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import { calculateTotalHours } from "../../utils/calculateCost";
-import { useQuoteNumber } from "../../hooks/useQuoteNumber";
 
 const QuotePreview = ({ projectData, userDetails }) => {
   const currentDate = new Date().toLocaleDateString("en-GB", {
@@ -10,7 +10,8 @@ const QuotePreview = ({ projectData, userDetails }) => {
     year: "numeric",
   });
 
-  const quoteNumber = useQuoteNumber();
+  // Use the quote number passed down from projectData
+  const quoteNumber = projectData.quoteNumber || "N/A";
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-GB", {
@@ -201,6 +202,7 @@ QuotePreview.propTypes = {
       })
     ),
     totalCost: PropTypes.number.isRequired,
+    quoteNumber: PropTypes.string, // Ensure this property is recognized
   }).isRequired,
   userDetails: PropTypes.shape({
     companyName: PropTypes.string,

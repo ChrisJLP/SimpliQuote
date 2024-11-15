@@ -40,7 +40,7 @@ const CreateProjectForm = ({
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
 
-  // Debugging logs to track render and state
+  // Debugging logs for current state and initialData
   console.log("=== CreateProjectForm Render Start ===");
   console.log(
     "CreateProjectForm mounted/re-rendered with initialData:",
@@ -74,9 +74,7 @@ const CreateProjectForm = ({
   const handleConfirmDelete = () => {
     console.log("Confirm delete task at index:", taskToDelete);
     if (taskToDelete !== null) {
-      // The handleRemoveTask function presumably is defined inside useProjectForm hook
-      // (not shown in previous code). Ensure it exists and only removes the task
-      // without closing the entire form or define it here:
+      // TODO: Implement handleRemoveTask in useProjectForm or define it here
       // handleRemoveTask(taskToDelete);
       setTaskToDelete(null);
       setShowDeleteTaskModal(false);
@@ -117,18 +115,13 @@ const CreateProjectForm = ({
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("handleSubmit called for CreateProjectForm");
-    const quoteNumberElement = document.querySelector(
-      '[data-testid="quote-number"]'
-    );
-    const quoteNumber = quoteNumberElement
-      ? quoteNumberElement.textContent.split("#")[1].trim()
-      : null;
+  const handleProjectSubmit = () => {
+    console.log("handleProjectSubmit called for CreateProjectForm");
+    // The quoteNumber is now included in formData by QuoteNumber
+    // If not, we can handle that logic here
     const projectDataWithQuote = {
       ...formData,
-      quoteNumber,
+      quoteNumber: formData.quoteNumber || "", // Ensure quoteNumber is set
     };
     console.log("Submitting project data:", projectDataWithQuote);
 
@@ -136,14 +129,14 @@ const CreateProjectForm = ({
       onSubmit(projectDataWithQuote);
       console.log("onSubmit callback called for project form");
     } else {
-      console.log("No onSubmit prop provided, not calling callback.");
+      console.log("No onSubmit prop provided for project form.");
     }
   };
 
   console.log("=== CreateProjectForm Render End ===");
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <div className="flex flex-col h-full">
       {/* Scrollable content area */}
       <div className="overflow-y-auto p-6">
         <div className="flex justify-between items-start mb-6">
@@ -153,7 +146,7 @@ const CreateProjectForm = ({
           <div data-testid="quote-number">
             <QuoteNumber
               shouldGenerate={!initialData}
-              existingNumber={initialData?.quoteNumber}
+              existingNumber={formData.quoteNumber}
             />
           </div>
         </div>
@@ -381,10 +374,11 @@ const CreateProjectForm = ({
           {initialData ? "Close" : "Cancel"}
         </Button>
         <Button
-          type="submit"
+          type="button"
           variant="primary"
           onClick={() => {
             console.log("Submit project form (Create/Save) button clicked");
+            handleProjectSubmit();
           }}
         >
           {initialData ? "Save Changes" : "Create Project"}
@@ -492,7 +486,7 @@ const CreateProjectForm = ({
           </Button>
         </div>
       </Modal>
-    </form>
+    </div>
   );
 };
 
@@ -515,7 +509,7 @@ CreateProjectForm.propTypes = {
     tasks: PropTypes.array,
     otherCosts: PropTypes.array,
     totalCost: PropTypes.number,
-    quoteNumber: PropTypes.string,
+    quoteNumber: PropTypes.string, // Ensure this is included if present
   }),
 };
 
