@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "predeploy": "npm run build", // Runs the build script before deployment
+    "deploy": "gh-pages -d dist"   // Deploys the 'dist' folder to GitHub Pages
   },
   "dependencies": {
     "lucide-react": "^0.456.0",
@@ -34,6 +36,7 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "vite": "^5.4.8",
-    "vitest": "^2.1.3"
+    "vitest": "^2.1.3",
+    "gh-pages": "^5.0.0" // Ensure 'gh-pages' is listed here
   }
 }
