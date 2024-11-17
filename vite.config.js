@@ -7,7 +7,7 @@ const repositoryName = "SimpliQuote";
 
 export default defineConfig({
   plugins: [react()],
-  base: `/${repositoryName}/`, // Correctly reference the repositoryName variable
+  base: `/${repositoryName}/`,
   test: {
     globals: true,
     environment: "jsdom",
