@@ -8,7 +8,7 @@ import { generatePDF } from "../utils/pdfGenerator";
 const ProjectCard = ({ project, userDetails, onEditProject }) => {
   if (!project) {
     return (
-      <div className="w-full lg:w-1/2 flex flex-col">
+      <div className="w-full max-w-[750px] mx-auto flex flex-col">
         <div className="bg-[#EFEFEC] rounded-lg shadow-md flex flex-col max-h-[600px]">
           <div className="p-4 flex-1 overflow-y-auto text-center">
             <h2 className="text-xl font-bold mb-2 text-gray-800">
@@ -33,7 +33,7 @@ const ProjectCard = ({ project, userDetails, onEditProject }) => {
   const pdfFilename = `Quote_${project.quoteNumber || "N/A"}.pdf`;
 
   return (
-    <div className="w-full lg:w-1/2 flex flex-col">
+    <div className="w-full max-w-[750px] mx-auto flex flex-col">
       <div className="bg-[#EFEFEC] rounded-lg shadow-md flex flex-col max-h-[900px]">
         <div className="p-4 flex-1 overflow-y-auto">
           {/* Pass the unique ID to QuotePreview */}
