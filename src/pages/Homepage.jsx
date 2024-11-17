@@ -6,7 +6,8 @@ import Modal from "../components/Modal";
 import ProjectCard from "../components/ProjectCard";
 import ProjectList from "../components/ProjectList";
 import WelcomeModal from "../components/WelcomeModal";
-import FloatingActionButton from "../components/FloatingActionButton";
+// Removed FloatingActionButton import
+// import FloatingActionButton from "../components/FloatingActionButton";
 import { useUserDetails } from "../hooks/useUserDetails";
 import { useProjects } from "../hooks/useProjects";
 import QuotePreview from "../features/Project/QuotePreview"; // Ensure QuotePreview is imported
@@ -158,7 +159,7 @@ const Homepage = () => {
           </h1>
         </div>
 
-        {/* Remove User Details from Homepage Header */}
+        {/* Removed User Details from Homepage Header */}
         {/*
         <div className="absolute right-4 top-4 lg:relative lg:top-auto lg:right-auto lg:flex lg:items-center lg:space-x-2">
           {userDetails ? (
@@ -210,8 +211,8 @@ const Homepage = () => {
         />
       </div>
 
-      {/* Mobile Floating Action Button */}
-      <FloatingActionButton onClick={handleEditDetails} />
+      {/* Removed Mobile Floating Action Button */}
+      {/* <FloatingActionButton onClick={handleEditDetails} /> */}
 
       {/* Modals */}
       <WelcomeModal

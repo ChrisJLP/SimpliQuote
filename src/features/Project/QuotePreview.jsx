@@ -56,7 +56,7 @@ const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
                       e.preventDefault();
                       onEditDetails();
                     }}
-                    className="text-blue-500 hover:underline font-medium cursor-pointer no-pdf hidden lg:inline-block"
+                    className="text-blue-500 hover:underline font-medium cursor-pointer no-pdf inline-block"
                   >
                     Edit Details
                   </a>
