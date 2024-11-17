@@ -3,7 +3,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { calculateTotalHours } from "../../utils/calculateCost";
-import Button from "../../components/Button"; // Ensure Button is imported
 
 const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
   const currentDate = new Date().toLocaleDateString("en-GB", {
@@ -24,7 +23,7 @@ const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
   return (
     <div
       id={id}
-      className="bg-transparent w-full max-w-4xl mx-auto max-h-[70vh] overflow-y-auto relative"
+      className="bg-transparent w-full max-w-4xl mx-auto lg:max-h-[70vh] lg:overflow-y-auto relative"
     >
       <div className="p-4 sm:p-8">
         {/* Header */}
