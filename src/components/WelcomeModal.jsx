@@ -1,5 +1,5 @@
-// Inside WelcomeModal.jsx
-import React, { useState } from "react";
+// WelcomeModal.jsx
+import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import Button from "./Button";
 import FormInput from "./FormInput";
@@ -21,6 +21,21 @@ Payment terms: 50% deposit required to commence work.
 Final payment due upon project completion.`,
   });
   const [showTermsModal, setShowTermsModal] = useState(false);
+
+  // Add this useEffect to update formData when initialData changes
+  useEffect(() => {
+    setFormData({
+      companyName: safeInitialData.companyName || "",
+      name: safeInitialData.name || "",
+      phoneNumber: safeInitialData.phoneNumber || "",
+      email: safeInitialData.email || "",
+      terms:
+        safeInitialData.terms ||
+        `This quote is valid for 30 days from the date of issue.
+Payment terms: 50% deposit required to commence work.
+Final payment due upon project completion.`,
+    });
+  }, [initialData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -118,7 +133,7 @@ Final payment due upon project completion.`,
               </Button>
             </div>
 
-            {/* Desktop layout - remains unchanged */}
+            {/* Desktop layout */}
             <div className="hidden lg:flex lg:justify-between lg:items-center lg:mt-6">
               <Button
                 variant="outline"
