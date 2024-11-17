@@ -9,7 +9,6 @@ export const useQuoteNumber = (
 ) => {
   const [quoteNumber, setQuoteNumber] = useState(null);
   const hasGeneratedRef = useRef(false);
-
   useEffect(() => {
     // If we already generated a number in this render cycle, don't do it again
     if (hasGeneratedRef.current) {
@@ -18,6 +17,7 @@ export const useQuoteNumber = (
 
     if (existingNumber) {
       setQuoteNumber(existingNumber);
+      hasGeneratedRef.current = true; // Mark as generated to avoid repeat setting
       return;
     }
 

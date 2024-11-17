@@ -35,9 +35,11 @@ export const useProjectForm = (initialData = null) => {
   const [showCostsModal, setShowCostsModal] = useState(false);
 
   useEffect(() => {
-    setOriginalData(initialData ? { ...initialData } : null);
-    setIsDirty(false);
-  }, [initialData]);
+    if (JSON.stringify(initialData) !== JSON.stringify(originalData)) {
+      setOriginalData(initialData ? { ...initialData } : null);
+      setIsDirty(false);
+    }
+  }, [initialData, originalData]);
 
   const handleInputChange = useCallback(
     (e) => {
@@ -64,7 +66,8 @@ export const useProjectForm = (initialData = null) => {
         return updatedData;
       });
 
-      if (originalData) {
+      // Set isDirty only when value actually changes
+      if (originalData && originalData[name] !== value) {
         setIsDirty(true);
       }
     },
@@ -137,7 +140,12 @@ export const useProjectForm = (initialData = null) => {
           ),
         }));
       }
-      if (originalData) setIsDirty(true);
+      if (
+        originalData &&
+        JSON.stringify(originalData) !== JSON.stringify(formData)
+      ) {
+        setIsDirty(true);
+      }
     },
     [formData, savedTasks, previousHoursEstimate, originalData]
   );

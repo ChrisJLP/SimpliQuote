@@ -1,4 +1,3 @@
-// src/components/ProjectCard.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import QuotePreview from "../features/Project/QuotePreview";
@@ -14,8 +13,8 @@ const ProjectCard = ({
   if (!project) {
     return (
       <div className="w-full max-w-[750px] mx-auto flex flex-col">
-        <div className="bg-[#EFEFEC] rounded-lg shadow-md flex flex-col max-h-[600px]">
-          <div className="p-4 flex-1 overflow-y-auto text-center">
+        <div className="bg-[#EFEFEC] rounded-lg shadow-md flex flex-col lg:max-h-[600px]">
+          <div className="p-4 flex-1 lg:overflow-y-auto text-center">
             <h2 className="text-xl font-bold mb-2 text-gray-800">
               No Project Selected
             </h2>
@@ -39,8 +38,8 @@ const ProjectCard = ({
 
   return (
     <div className="w-full max-w-[750px] mx-auto flex flex-col">
-      <div className="bg-[#EFEFEC] rounded-lg shadow-md flex flex-col max-h-[900px]">
-        <div className="p-4 flex-1 overflow-y-auto">
+      <div className="bg-[#EFEFEC] rounded-lg shadow-md flex flex-col lg:max-h-[900px]">
+        <div className="p-4 flex-1 overflow-hidden lg:overflow-y-auto">
           {/* Pass the unique ID and onEditDetails to QuotePreview */}
           <QuotePreview
             id={quotePreviewId} // Assign the unique ID

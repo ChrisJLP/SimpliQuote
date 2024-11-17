@@ -12,10 +12,10 @@ const QuoteNumber = ({
   const quoteNumber = useQuoteNumber(shouldGenerate, existingNumber);
 
   useEffect(() => {
-    if (quoteNumber && onGenerate) {
+    if (quoteNumber && onGenerate && !existingNumber) {
       onGenerate(quoteNumber);
     }
-  }, [quoteNumber, onGenerate]);
+  }, [quoteNumber, onGenerate, existingNumber]);
 
   if (!quoteNumber) return null;
 
