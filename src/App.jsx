@@ -1,10 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom"; // Use HashRouter
 import Homepage from "./pages/Homepage";
 
 function App() {
   return (
-    <Router basename="/SimpliQuote/">
+    <Router>
       <div className="app-container">
         <Routes>
           <Route path="/" element={<Homepage />} />
