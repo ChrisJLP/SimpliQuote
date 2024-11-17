@@ -1,5 +1,5 @@
 // components/QuoteNumber.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useQuoteNumber } from "../hooks/useQuoteNumber";
 
@@ -7,8 +7,15 @@ const QuoteNumber = ({
   shouldGenerate = false,
   existingNumber = null,
   className = "",
+  onGenerate,
 }) => {
   const quoteNumber = useQuoteNumber(shouldGenerate, existingNumber);
+
+  useEffect(() => {
+    if (quoteNumber && onGenerate) {
+      onGenerate(quoteNumber);
+    }
+  }, [quoteNumber, onGenerate]);
 
   if (!quoteNumber) return null;
 
@@ -23,6 +30,7 @@ QuoteNumber.propTypes = {
   shouldGenerate: PropTypes.bool,
   existingNumber: PropTypes.string,
   className: PropTypes.string,
+  onGenerate: PropTypes.func,
 };
 
 export default QuoteNumber;

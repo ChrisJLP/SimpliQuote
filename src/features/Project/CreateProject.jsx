@@ -10,7 +10,7 @@ import CreateCostsForm from "../Costs/CreateCosts";
 import QuotePreview from "./QuotePreview";
 import QuoteNumber from "../../components/QuoteNumber";
 import { useProjectForm } from "../../hooks/useForm";
-import { generatePDF } from "../../utils/pdfGenerator"; // Import generatePDF
+import { generatePDF } from "../../utils/pdfGenerator";
 
 const CreateProjectForm = ({
   onSubmit,
@@ -40,6 +40,11 @@ const CreateProjectForm = ({
   const [showDeleteTaskModal, setShowDeleteTaskModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
+
+  // New handler for quote number generation
+  const handleQuoteNumberGenerated = (number) => {
+    handleInputChange({ target: { name: "quoteNumber", value: number } });
+  };
 
   const handleUpdateTask = (updatedTask) => {
     console.log("handleUpdateTask called with:", updatedTask);
@@ -106,16 +111,10 @@ const CreateProjectForm = ({
 
   const handleProjectSubmit = () => {
     console.log("handleProjectSubmit called for CreateProjectForm");
-    // The quoteNumber is now included in formData by QuoteNumber
-    // If not, we can handle that logic here
-    const projectDataWithQuote = {
-      ...formData,
-      quoteNumber: formData.quoteNumber || "", // Ensure quoteNumber is set
-    };
-    console.log("Submitting project data:", projectDataWithQuote);
+    console.log("Submitting project data:", formData);
 
     if (onSubmit) {
-      onSubmit(projectDataWithQuote);
+      onSubmit(formData);
       console.log("onSubmit callback called for project form");
     } else {
       console.log("No onSubmit prop provided for project form.");
@@ -134,6 +133,7 @@ const CreateProjectForm = ({
             <QuoteNumber
               shouldGenerate={!initialData}
               existingNumber={formData.quoteNumber}
+              onGenerate={handleQuoteNumberGenerated}
             />
           </div>
         </div>
@@ -460,7 +460,7 @@ const CreateProjectForm = ({
         }}
       >
         <QuotePreview
-          id="quote-preview" // Assigning ID for PDF generation
+          id="quote-preview"
           projectData={formData}
           userDetails={userDetails}
         />
@@ -513,7 +513,7 @@ CreateProjectForm.propTypes = {
     tasks: PropTypes.array,
     otherCosts: PropTypes.array,
     totalCost: PropTypes.number,
-    quoteNumber: PropTypes.string, // Ensure this is included if present
+    quoteNumber: PropTypes.string,
   }),
 };
 

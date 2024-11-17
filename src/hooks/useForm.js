@@ -13,6 +13,7 @@ const DEFAULT_PROJECT_STATE = {
   tasks: [],
   otherCosts: [],
   totalCost: 0,
+  quoteNumber: "",
 };
 
 export const useProjectForm = (initialData = null) => {
@@ -167,6 +168,7 @@ export const useProjectForm = (initialData = null) => {
 
   return {
     formData,
+    setFormData, // Exported here
     includeTasks,
     showCostsModal,
     setShowCostsModal,
@@ -183,22 +185,35 @@ export const useProjectForm = (initialData = null) => {
   };
 };
 
+// Define DEFAULT_TASK_STATE
+const DEFAULT_TASK_STATE = {
+  name: "",
+  hoursEstimate: "",
+  otherCosts: [],
+};
+
+// Define useTaskForm
 export const useTaskForm = (initialData = null) => {
   const [formData, setFormData] = useState({
-    name: initialData?.name || "",
-    hoursEstimate: initialData?.hoursEstimate || "",
-    subtasks: initialData?.subtasks || [],
-    otherCosts: initialData?.otherCosts || [],
+    ...DEFAULT_TASK_STATE,
+    ...initialData,
   });
 
   const [hasSubtasks, setHasSubtasks] = useState(
-    initialData?.subtasks?.length > 0
+    initialData?.subtasks?.length > 0 || false
   );
-  const [showCostsModal, setShowCostsModal] = useState(false);
+
   const [confirmedSubtasks, setConfirmedSubtasks] = useState(
     initialData?.subtasks || []
   );
-  const [previousHoursEstimate, setPreviousHoursEstimate] = useState("");
+
+  const [currentSubtask, setCurrentSubtask] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingSubtaskIndex, setEditingSubtaskIndex] = useState(null);
+  const [showDeleteSubtaskModal, setShowDeleteSubtaskModal] = useState(false);
+  const [subtaskToDelete, setSubtaskToDelete] = useState(null);
+  const [subtaskError, setSubtaskError] = useState("");
+  const [showCostsModal, setShowCostsModal] = useState(false);
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -208,83 +223,52 @@ export const useTaskForm = (initialData = null) => {
     }));
   }, []);
 
-  const handleAddCosts = useCallback((costs) => {
-    setFormData((prev) => ({
-      ...prev,
-      otherCosts: costs.map((cost) => ({
-        ...cost,
-        amount: parseFloat(cost.amount) || 0,
-      })),
-    }));
-    setShowCostsModal(false);
+  const toggleSubtasks = useCallback((enable) => {
+    setHasSubtasks(enable);
+    if (!enable) {
+      // Clear subtasks when disabling
+      setConfirmedSubtasks([]);
+    }
   }, []);
 
-  const updateSubtasks = useCallback((newSubtasks) => {
-    setConfirmedSubtasks(newSubtasks);
-    setFormData((prev) => ({
-      ...prev,
-      subtasks: newSubtasks,
-    }));
+  const handleAddSubtask = useCallback(() => {
+    setCurrentSubtask({ name: "", hoursEstimate: "" });
+    setIsEditing(false);
+    setEditingSubtaskIndex(null);
   }, []);
 
   const handleEditSubtask = useCallback(
     (index) => {
-      const subtaskToEdit = { ...confirmedSubtasks[index], index };
-      return subtaskToEdit;
+      const subtaskToEdit = confirmedSubtasks[index];
+      setCurrentSubtask(subtaskToEdit);
+      setIsEditing(true);
+      setEditingSubtaskIndex(index);
     },
     [confirmedSubtasks]
   );
 
-  const handleConfirmSubtask = useCallback(
-    (subtask) => {
-      if (subtask && subtask.name && subtask.hoursEstimate) {
-        const newSubtask = {
-          ...subtask,
-          hoursEstimate: parseFloat(subtask.hoursEstimate) || 0,
-        };
-        const newSubtasks = [...confirmedSubtasks, newSubtask];
-        setConfirmedSubtasks(newSubtasks);
-        setFormData((prev) => ({
-          ...prev,
-          subtasks: newSubtasks,
-        }));
-        return true;
-      }
-      return false;
-    },
-    [confirmedSubtasks]
-  );
+  const handleConfirmSubtask = useCallback((subtask) => {
+    setConfirmedSubtasks((prev) => [...prev, subtask]);
+    setCurrentSubtask(null);
+  }, []);
 
-  const handleRemoveSubtask = useCallback(
-    (index) => {
-      const newSubtasks = [...confirmedSubtasks];
-      newSubtasks.splice(index, 1);
-      updateSubtasks(newSubtasks);
-    },
-    [confirmedSubtasks, updateSubtasks]
-  );
+  const handleUpdateSubtask = useCallback((index, updatedSubtask) => {
+    setConfirmedSubtasks((prev) =>
+      prev.map((subtask, i) => (i === index ? updatedSubtask : subtask))
+    );
+    setCurrentSubtask(null);
+  }, []);
 
-  const toggleSubtasks = useCallback(
-    (enable) => {
-      setHasSubtasks(enable);
-      if (enable) {
-        setPreviousHoursEstimate(formData.hoursEstimate);
-        setFormData((prev) => ({
-          ...prev,
-          subtasks: confirmedSubtasks,
-          hoursEstimate: "",
-        }));
-      } else {
-        setConfirmedSubtasks(formData.subtasks);
-        setFormData((prev) => ({
-          ...prev,
-          subtasks: [],
-          hoursEstimate: previousHoursEstimate,
-        }));
-      }
-    },
-    [formData, confirmedSubtasks, previousHoursEstimate]
-  );
+  const handleRemoveSubtask = useCallback((index) => {
+    setConfirmedSubtasks((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleAddCosts = useCallback((costs) => {
+    setFormData((prev) => ({
+      ...prev,
+      otherCosts: costs,
+    }));
+  }, []);
 
   return {
     formData,
@@ -294,11 +278,24 @@ export const useTaskForm = (initialData = null) => {
     handleInputChange,
     handleAddCosts,
     toggleSubtasks,
-    setFormData,
     confirmedSubtasks,
-    updateSubtasks,
+    updateSubtasks: setConfirmedSubtasks,
+    handleAddSubtask,
     handleEditSubtask,
     handleConfirmSubtask,
+    handleUpdateSubtask,
     handleRemoveSubtask,
+    currentSubtask,
+    setCurrentSubtask,
+    subtaskError,
+    setSubtaskError,
+    isEditing,
+    setIsEditing,
+    editingSubtaskIndex,
+    setEditingSubtaskIndex,
+    showDeleteSubtaskModal,
+    setShowDeleteSubtaskModal,
+    subtaskToDelete,
+    setSubtaskToDelete,
   };
 };

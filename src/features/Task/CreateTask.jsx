@@ -5,8 +5,7 @@ import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import WarningModal from "../../components/WarningModal";
 import CreateCostsForm from "../Costs/CreateCosts";
-import QuoteNumber from "../../components/QuoteNumber";
-import { useTaskForm } from "../../hooks/useForm";
+import { useTaskForm } from "../../hooks/useForm"; // Import useTaskForm
 
 const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
   const {
@@ -22,6 +21,7 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     handleAddSubtask,
     handleEditSubtask,
     handleConfirmSubtask,
+    handleUpdateSubtask, // Use this from useTaskForm
     handleRemoveSubtask,
     currentSubtask,
     setCurrentSubtask,
@@ -112,23 +112,6 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
     }
   };
 
-  const handleUpdateSubtask = (index, updatedSubtask) => {
-    console.log(
-      `handleUpdateSubtask called for index ${index} with:`,
-      updatedSubtask
-    );
-    const updatedSubtasks = confirmedSubtasks.map((subtask, i) =>
-      i === index
-        ? {
-            ...updatedSubtask,
-            hoursEstimate: parseFloat(updatedSubtask.hoursEstimate) || 0,
-          }
-        : subtask
-    );
-    console.log("Updated subtasks array:", updatedSubtasks);
-    updateSubtasks(updatedSubtasks);
-  };
-
   const handleCancelSubtask = () => {
     console.log("handleCancelSubtask triggered, subtask editing cancelled");
     setCurrentSubtask(null);
@@ -187,7 +170,7 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
           <h2 className="text-2xl font-medium">
             {initialData ? "Edit Task" : "Create a Task"}
           </h2>
-          <QuoteNumber />
+          {/* Removed QuoteNumber component as it's not needed here */}
         </div>
 
         {/* Main form fields */}
@@ -285,11 +268,7 @@ const CreateTaskForm = ({ onSubmit, onCancel, initialData }) => {
                           type="button"
                           onClick={() => {
                             console.log(`Edit subtask at index: ${index}`);
-                            const subtaskToEdit = handleEditSubtask(index);
-                            setCurrentSubtask(subtaskToEdit);
-                            setSubtaskError("");
-                            setIsEditing(true);
-                            setEditingSubtaskIndex(index);
+                            handleEditSubtask(index);
                           }}
                           className="text-slate-600 hover:text-slate-800"
                         >
