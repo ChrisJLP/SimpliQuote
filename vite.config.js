@@ -3,7 +3,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-// Replace '<repository-name>' with your actual repository name, e.g., 'simpliquote'
 const repositoryName = "SimpliQuote";
 
 export default defineConfig({
