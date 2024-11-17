@@ -23,7 +23,7 @@ const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
   return (
     <div
       id={id}
-      className="bg-transparent w-full max-w-4xl mx-auto lg:max-h-[70vh] lg:overflow-y-auto relative"
+      className="bg-transparent w-full max-w-4xl mx-auto lg:max-h-[70vh] lg:overflow-y-auto relative p-4 md:p-6 overflow-hidden lg:overflow-visible"
     >
       <div className="p-4 sm:p-8">
         {/* Header */}
