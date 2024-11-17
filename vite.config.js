@@ -7,7 +7,7 @@ const repositoryName = "SimpliQuote";
 
 export default defineConfig({
   plugins: [react()],
-  base: `/${SimpliQuote}/`, // Set the base path for GitHub Pages
+  base: `/${repositoryName}/`, // Correctly reference the repositoryName variable
   test: {
     globals: true,
     environment: "jsdom",
