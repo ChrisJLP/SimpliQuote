@@ -1,16 +1,16 @@
-// components/QuotePreview.jsx
+// src/features/Project/QuotePreview.jsx
 import React from "react";
 import PropTypes from "prop-types";
 import { calculateTotalHours } from "../../utils/calculateCost";
+import Button from "../../components/Button"; // Ensure Button is imported
 
-const QuotePreview = ({ projectData, userDetails, id }) => {
+const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
   const currentDate = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
-  // Use the quote number passed down from projectData
   const quoteNumber = projectData.quoteNumber || "N/A";
 
   const formatCurrency = (amount) => {
@@ -22,12 +22,13 @@ const QuotePreview = ({ projectData, userDetails, id }) => {
 
   return (
     <div
-      id={id} // Added ID prop
-      className="bg-transparent w-full max-w-4xl mx-auto max-h-[70vh] overflow-y-auto"
+      id={id}
+      className="bg-transparent w-full max-w-4xl mx-auto max-h-[70vh] overflow-y-auto relative"
     >
       <div className="p-4 sm:p-8">
         {/* Header */}
-        <div className="space-y-6 sm:space-y-0 sm:flex sm:justify-between mb-8">
+        <div className="flex flex-row justify-between mb-8">
+          {/* Quote Details */}
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-800">Quote</h1>
             <div className="space-y-1">
@@ -35,14 +36,29 @@ const QuotePreview = ({ projectData, userDetails, id }) => {
               <p className="text-gray-600">Quote #: {quoteNumber}</p>
             </div>
           </div>
+
+          {/* User Details */}
           {userDetails && (
-            <div className="text-left sm:text-right space-y-1 mt-4 sm:mt-0">
+            <div className="text-left sm:text-right space-y-1 flex flex-col items-end">
               <p className="font-bold">
                 {userDetails.companyName || "Company Name"}
               </p>
               <p>{userDetails.name || "Your Name"}</p>
               <p>{userDetails.email || "Email"}</p>
               <p>{userDetails.phoneNumber || "Phone"}</p>
+              {/* Edit Your Details Button */}
+              <div className="mt-2">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onEditDetails();
+                  }}
+                  className="text-blue-500 hover:underline font-medium cursor-pointer no-pdf hidden lg:inline-block"
+                >
+                  Edit Details
+                </a>
+              </div>
             </div>
           )}
         </div>
@@ -234,15 +250,17 @@ QuotePreview.propTypes = {
       })
     ),
     totalCost: PropTypes.number.isRequired,
-    quoteNumber: PropTypes.string, // Ensure this property is recognized
+    quoteNumber: PropTypes.string,
   }).isRequired,
   userDetails: PropTypes.shape({
     companyName: PropTypes.string,
     name: PropTypes.string,
     email: PropTypes.string,
     phoneNumber: PropTypes.string,
+    terms: PropTypes.string,
   }),
-  id: PropTypes.string, // New prop for ID
+  id: PropTypes.string,
+  onEditDetails: PropTypes.func.isRequired, // Ensure this prop is required
 };
 
 export default QuotePreview;

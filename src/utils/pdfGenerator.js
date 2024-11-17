@@ -22,6 +22,12 @@ export const generatePDF = async (elementId, filename = "quote.pdf") => {
     clonedElement.style.maxHeight = "none"; // Remove height constraints
     clonedElement.style.overflow = "visible"; // Ensure all content is visible
 
+    // **Hide all elements with the 'no-pdf' class within the cloned element**
+    const noPdfElements = clonedElement.querySelectorAll(".no-pdf");
+    noPdfElements.forEach((el) => {
+      el.style.display = "none";
+    });
+
     // Append the cloned element to the body (hidden)
     clonedElement.style.position = "absolute";
     clonedElement.style.left = "-9999px";

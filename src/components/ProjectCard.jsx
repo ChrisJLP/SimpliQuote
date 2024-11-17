@@ -5,7 +5,12 @@ import QuotePreview from "../features/Project/QuotePreview";
 import Button from "./Button";
 import { generatePDF } from "../utils/pdfGenerator";
 
-const ProjectCard = ({ project, userDetails, onEditProject }) => {
+const ProjectCard = ({
+  project,
+  userDetails,
+  onEditProject,
+  onEditDetails,
+}) => {
   if (!project) {
     return (
       <div className="w-full max-w-[750px] mx-auto flex flex-col">
@@ -36,11 +41,12 @@ const ProjectCard = ({ project, userDetails, onEditProject }) => {
     <div className="w-full max-w-[750px] mx-auto flex flex-col">
       <div className="bg-[#EFEFEC] rounded-lg shadow-md flex flex-col max-h-[900px]">
         <div className="p-4 flex-1 overflow-y-auto">
-          {/* Pass the unique ID to QuotePreview */}
+          {/* Pass the unique ID and onEditDetails to QuotePreview */}
           <QuotePreview
             id={quotePreviewId} // Assign the unique ID
             projectData={project}
             userDetails={userDetails}
+            onEditDetails={onEditDetails} // Pass the handler
           />
         </div>
         <div className="sticky bottom-0 left-0 right-0 p-4 flex justify-end space-x-4 bg-[#EFEFEC]">
@@ -68,6 +74,7 @@ ProjectCard.propTypes = {
   project: PropTypes.object,
   userDetails: PropTypes.object,
   onEditProject: PropTypes.func.isRequired,
+  onEditDetails: PropTypes.func.isRequired, // Added prop type
 };
 
 ProjectCard.defaultProps = {
