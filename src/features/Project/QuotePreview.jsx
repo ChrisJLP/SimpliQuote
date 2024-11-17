@@ -1,4 +1,5 @@
 // src/features/Project/QuotePreview.jsx
+
 import React from "react";
 import PropTypes from "prop-types";
 import { calculateTotalHours } from "../../utils/calculateCost";
@@ -37,30 +38,48 @@ const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
             </div>
           </div>
 
-          {/* User Details */}
-          {userDetails && (
-            <div className="text-left sm:text-right space-y-1 flex flex-col items-end">
-              <p className="font-bold">
-                {userDetails.companyName || "Company Name"}
-              </p>
-              <p>{userDetails.name || "Your Name"}</p>
-              <p>{userDetails.email || "Email"}</p>
-              <p>{userDetails.phoneNumber || "Phone"}</p>
-              {/* Edit Your Details Button */}
-              <div className="mt-2">
+          {/* User Details or Placeholder */}
+          <div className="text-left sm:text-right space-y-1 flex flex-col items-end">
+            {userDetails && userDetails.name ? (
+              <>
+                <p className="font-bold">
+                  {userDetails.companyName || "Company Name"}
+                </p>
+                <p>{userDetails.name || "Your Name"}</p>
+                <p>{userDetails.email || "Email"}</p>
+                <p>{userDetails.phoneNumber || "Phone"}</p>
+                {/* Edit Your Details Button */}
+                <div className="mt-2">
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onEditDetails();
+                    }}
+                    className="text-blue-500 hover:underline font-medium cursor-pointer no-pdf hidden lg:inline-block"
+                  >
+                    Edit Details
+                  </a>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-500">
+                  Your details will show here
+                </p>
                 <a
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     onEditDetails();
                   }}
-                  className="text-blue-500 hover:underline font-medium cursor-pointer no-pdf hidden lg:inline-block"
+                  className="text-blue-400 text-sm hover:underline"
                 >
-                  Edit Details
+                  Update Details
                 </a>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Client Details */}
@@ -84,7 +103,12 @@ const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
               </div>
               <div className="flex justify-between py-2 border-b">
                 <span className="font-medium">Rate:</span>
-                <span>{formatCurrency(projectData.hourlyRate)}/hour</span>
+                <span>
+                  {projectData.hourlyRate > 0
+                    ? formatCurrency(projectData.hourlyRate)
+                    : "Your hourly rate will show here"}
+                  {projectData.hourlyRate > 0 && "/hour"}
+                </span>
               </div>
             </div>
           )}
@@ -112,9 +136,12 @@ const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
                           h
                         </td>
                         <td className="px-4 py-2 text-right">
-                          {formatCurrency(
-                            calculateTotalHours([task]) * projectData.hourlyRate
-                          )}
+                          {projectData.hourlyRate > 0
+                            ? formatCurrency(
+                                calculateTotalHours([task]) *
+                                  projectData.hourlyRate
+                              )
+                            : "£0"}
                         </td>
                       </tr>
                       {/* Display subtasks */}
@@ -128,9 +155,11 @@ const QuotePreview = ({ projectData, userDetails, id, onEditDetails }) => {
                             {subtask.hoursEstimate}h
                           </td>
                           <td className="px-4 py-2 text-right">
-                            {formatCurrency(
-                              subtask.hoursEstimate * projectData.hourlyRate
-                            )}
+                            {projectData.hourlyRate > 0
+                              ? formatCurrency(
+                                  subtask.hoursEstimate * projectData.hourlyRate
+                                )
+                              : "£0"}
                           </td>
                         </tr>
                       ))}

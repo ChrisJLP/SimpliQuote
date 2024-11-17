@@ -22,14 +22,26 @@ export const useProjects = () => {
 
   const saveProject = (projectData) => {
     try {
+      // Preserve the provided ID if it exists; otherwise, generate a new one
       const newProject = {
         ...projectData,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
+        id: projectData.id !== undefined ? projectData.id : Date.now(),
+        createdAt: projectData.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
+      // Use functional state update to ensure we have the latest projects
       setProjects((prevProjects) => {
+        const exists = prevProjects.some(
+          (project) => project.id === newProject.id
+        );
+        if (exists) {
+          console.warn(
+            `Project with ID ${newProject.id} already exists. Skipping save.`
+          );
+          return prevProjects; // Return previous projects unchanged
+        }
+
         const updatedProjects = [...prevProjects, newProject];
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProjects));
         return updatedProjects;
@@ -50,8 +62,8 @@ export const useProjects = () => {
             ? {
                 ...project,
                 ...projectData,
-                quoteNumber: project.quoteNumber,
-                createdAt: project.createdAt,
+                quoteNumber: project.quoteNumber, // Preserve quoteNumber
+                createdAt: project.createdAt, // Preserve createdAt
                 updatedAt: new Date().toISOString(),
               }
             : project
